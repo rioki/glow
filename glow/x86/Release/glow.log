@@ -1,0 +1,10 @@
+﻿  FrameBuffer.cpp
+  Shader.cpp
+  Texture.cpp
+  util.cpp
+  VertexBuffer.cpp
+     Creating library E:\Development\glow\x86\Release\glow.lib and object E:\Development\glow\x86\Release\glow.exp
+  Generating code
+  All 333 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  glow.vcxproj -> E:\Development\glow\x86\Release\glow.dll

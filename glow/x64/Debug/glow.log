@@ -1,0 +1,8 @@
+﻿  FrameBuffer.cpp
+  Shader.cpp
+  Texture.cpp
+  util.cpp
+  VertexBuffer.cpp
+  Generating Code...
+     Creating library E:\Development\glow\x64\Debug\glow.lib and object E:\Development\glow\x64\Debug\glow.exp
+  glow.vcxproj -> E:\Development\glow\x64\Debug\glow.dll
