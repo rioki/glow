@@ -1,18 +1,18 @@
 //
 // OpenGL Object Wrapper
-// 
-// Copyright (c) 2016-2019 Sean Farrell <sean.farrell@rioki.org>
-// 
+//
+// Copyright 2016-2019 Sean Farrell <sean.farrell@rioki.org>
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -20,21 +20,24 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-// 
+//
 
 #ifndef _GLOW_VERTEX_BUFFER_H_
 #define _GLOW_VERTEX_BUFFER_H_
 
 #include "defines.h"
 
+#include <stdexcept>
 #include <string>
 #include <vector>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "Shader.h"
 
 namespace glow
 {
-    enum FacesType
+    enum class FacesType
     {
         POINTS,
         LINES,
@@ -42,13 +45,13 @@ namespace glow
         LINE_LOOP,
         TRIANGLES,
         TRIANGLE_STRIP,
-        TRIANGLE_FAN        
+        TRIANGLE_FAN
     };
 
     class GLOW_EXPORT VertexBuffer
     {
     public:
-        
+
         VertexBuffer();
 
         ~VertexBuffer();
@@ -57,9 +60,15 @@ namespace glow
 
         void unbind();
 
-        void upload_values(const std::string attribute, unsigned int stride, unsigned int count, const float* data);
+        void upload_values(const std::string& attribute, unsigned int stride, unsigned int count, const float* data);
+
+        template <int N, glm::qualifier Q>
+        void upload_values(const std::string& attribute, const std::vector<glm::vec<N, float, Q>>& values);
 
         void upload_indexes(FacesType type, unsigned int count, const unsigned int* data);
+
+        template <int N, glm::qualifier Q>
+        void upload_indexes(const std::vector<glm::vec<N, glm::uint, Q>>& indexes);
 
         void draw(unsigned int set = 0);
 
@@ -72,7 +81,7 @@ namespace glow
             unsigned int glid;
             unsigned int adr;
         };
-        
+
         struct IndexInfo
         {
             FacesType     type;
@@ -85,6 +94,35 @@ namespace glow
         std::vector<BufferInfo> buffers;
         std::vector<IndexInfo>  indexes;
     };
+
+    template <int N, glm::qualifier Q>
+    void VertexBuffer::upload_values(const std::string& attribute, const std::vector<glm::vec<N, float, Q>>& values)
+    {
+        upload_values(attribute, N, values.size(), glm::value_ptr(values[0]));
+    }
+
+    template <int N, glm::qualifier Q>
+    void VertexBuffer::upload_indexes(const std::vector<glm::vec<N, glm::uint, Q>>& indexes)
+    {
+        FacesType type;
+        switch (N)
+        {
+            case 1:
+                type = FacesType::POINTS;
+                break;
+            case 2:
+                type = FacesType::LINES;
+                break;
+            case 3:
+                type = FacesType::TRIANGLES;
+                break;
+            case 4:
+                throw std::logic_error("OpenGL does not support vertex buffers with quads.");
+            default:
+                throw std::logic_error("Unknown index type.");
+        }
+        upload_indexes(type, indexes.size() * N, glm::value_ptr(indexes[0]));
+    }
 }
 
 #endif

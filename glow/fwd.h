@@ -22,15 +22,15 @@
 // THE SOFTWARE.
 //
 
-#ifndef _GLOW_H_
-#define _GLOW_H_
+#ifndef _GLOW_FWD_H_
+#define _GLOW_FWD_H_
 
-#include "defines.h"
-
-#include "util.h"
-#include "Shader.h"
-#include "VertexBuffer.h"
-#include "Texture.h"
-#include "FrameBuffer.h"
+namespace glow
+{
+    class Shader;
+    class Texture;
+    class VertexBuffer;
+}
 
 #endif
+

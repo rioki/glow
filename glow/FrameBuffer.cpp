@@ -1,18 +1,18 @@
 //
 // OpenGL Object Wrapper
-// 
-// Copyright (c) 2016-2019 Sean Farrell <sean.farrell@rioki.org>
-// 
+//
+// Copyright 2016-2019 Sean Farrell <sean.farrell@rioki.org>
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -20,7 +20,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-// 
+//
 
 #include "FrameBuffer.h"
 
@@ -31,7 +31,7 @@
 
 namespace glow
 {
-    GLenum buffers[] = { GL_COLOR_ATTACHMENT0, 
+    GLenum buffers[] = { GL_COLOR_ATTACHMENT0,
                          GL_COLOR_ATTACHMENT1,
                          GL_COLOR_ATTACHMENT2,
                          GL_COLOR_ATTACHMENT3,
@@ -51,11 +51,11 @@ namespace glow
 
 
     FrameBuffer::FrameBuffer()
-    : bound(false), glid(0) 
+    : bound(false), glid(0)
     {
-        glGenFramebuffers(1, &glid);    
+        glGenFramebuffers(1, &glid);
 
-        assert(glGetError() == GL_NO_ERROR); 
+        assert(glGetError() == GL_NO_ERROR);
     }
 
 
@@ -65,7 +65,7 @@ namespace glow
         {
             glDeleteFramebuffers(1, &glid);
 
-            assert(glGetError() == GL_NO_ERROR); 
+            assert(glGetError() == GL_NO_ERROR);
         }
     }
 
@@ -76,15 +76,15 @@ namespace glow
         glBindFramebuffer(GL_FRAMEBUFFER, glid);
         bound = true;
 
-        assert(glGetError() == GL_NO_ERROR); 
+        assert(glGetError() == GL_NO_ERROR);
     }
 
     void FrameBuffer::unbind()
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         bound = false;
-        
-        assert(glGetError() == GL_NO_ERROR); 
+
+        assert(glGetError() == GL_NO_ERROR);
     }
 
     void FrameBuffer::attach_depth(Texture& texture)
@@ -93,12 +93,12 @@ namespace glow
         assert(bound);
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture.glid, 0);
-        
-        assert(glGetError() == GL_NO_ERROR); 
+
+        assert(glGetError() == GL_NO_ERROR);
     }
 
     void FrameBuffer::attach(unsigned int slot, Texture& texture, unsigned int level)
-    {        
+    {
         assert(glid != 0);
         assert(bound);
         assert(slot < 15);
@@ -106,7 +106,7 @@ namespace glow
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + slot, GL_TEXTURE_2D, texture.glid, level);
         glNamedFramebufferDrawBuffers(glid, slot + 1, buffers);
 
-        assert(glGetError() == GL_NO_ERROR); 
+        assert(glGetError() == GL_NO_ERROR);
     }
 
     void FrameBuffer::attach(unsigned int slot, Texture& texture, CubeFace face, unsigned int level)
@@ -115,11 +115,11 @@ namespace glow
         assert(bound);
         assert(slot < 15);
 
-        GLenum target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + face;
+        GLenum target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + static_cast<GLenum>(face);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + slot, target, texture.glid, level);
 
         glNamedFramebufferDrawBuffers(glid, slot + 1, buffers);
 
-        assert(glGetError() == GL_NO_ERROR); 
+        assert(glGetError() == GL_NO_ERROR);
     }
 }
