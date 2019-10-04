@@ -1,7 +1,7 @@
 //
 // OpenGL Object Wrapper
 // 
-// Copyright (c) 2016 Sean Farrell <sean.farrell@rioki.org>
+// Copyright (c) 2016-2019 Sean Farrell <sean.farrell@rioki.org>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
