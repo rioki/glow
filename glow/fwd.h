@@ -30,6 +30,7 @@ namespace glow
     class Shader;
     class Texture;
     class VertexBuffer;
+	class FrameBuffer;
 }
 
 #endif

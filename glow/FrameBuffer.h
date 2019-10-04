@@ -33,27 +33,63 @@ namespace glow
 {
     enum class CubeFace;
 
+    /*!
+     * Frame Buffer
+     */
     class GLOW_EXPORT FrameBuffer
     {
     public:
-
+        /*!
+         * Create empty frame buffer.
+         */
         FrameBuffer();
 
+        /*!
+         * Destroy frame buffer.
+         */
         ~FrameBuffer();
 
+        /*!
+         * Bind the frame buffer for writing.
+         */ 
         void bind();
 
+        /*!
+         * Unbind the frame buffer.
+         */
         void unbind();
 
+        /*!
+         * Attach depth buffer.
+         */
         void attach_depth(Texture& texture);
 
+        /*!
+         * Attach color buffer.
+         *
+         * @param slot the slot to use
+         * @param texture the texture to write to
+         * @param level the mipmap level to write to
+         */
         void attach(unsigned int slot, Texture& texture, unsigned int level = 0);
 
+        /*!
+         * Attach cubamap face as color buffer..
+         *
+         * @param slot the slot to use
+         * @param texture the texture to write to
+         * @param face the cubemap face
+         * @param level the mipmap level to write to
+         */
         void attach(unsigned int slot, Texture& texture, CubeFace face, unsigned int level = 0);
 
     private:
         bool         bound;
         unsigned int glid;
+
+        FrameBuffer(const FrameBuffer&) = delete;
+        FrameBuffer& operator = (const FrameBuffer&) = delete;
+
     };
 }
 

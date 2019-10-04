@@ -25,6 +25,9 @@
 #ifndef _GLOW_DEFINES_H_
 #define _GLOW_DEFINES_H_
 
+/*!
+ * GLOW Version Number
+ */
 #define GLOW_VERSION "0.1.0"
 
 #ifdef _WIN32

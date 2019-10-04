@@ -36,16 +36,23 @@
 namespace glow
 {
     class Texture;
-
+	
+	/*!
+	 * All accepted uniform variable types.
+	 */
     typedef std::variant<bool, int, glm::uint, float,
                          glm::ivec2, glm::uvec2, glm::vec2,
                          glm::ivec3, glm::uvec3, glm::vec3,
                          glm::ivec4, glm::uvec4, glm::vec4,
                          glm::mat2, glm::mat3, glm::mat4> UniformValue;
 
+    /*!
+     * GLSL Shader Program
+     */
     class GLOW_EXPORT Shader
     {
     public:
+        
         Shader();
 
         ~Shader();
@@ -78,6 +85,10 @@ namespace glow
         std::string  fragment_code;
         unsigned int program_id;
         glm::uint    texture_slot = 0u;
+
+        Shader(const Shader&) = delete;
+        const Shader& operator = (const Shader&) = delete;
+
     };
 }
 

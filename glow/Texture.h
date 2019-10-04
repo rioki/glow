@@ -31,6 +31,9 @@
 
 namespace glow
 {
+    /*!
+     * Color Mode
+     */
     enum class ColorMode
     {
         NO_COLOR_MODE,
@@ -40,6 +43,9 @@ namespace glow
         DEPTH
     };
 
+    /*!
+     * Texture Type
+     */
     enum class TextureType
     {
         NO_TEXTURE,
@@ -47,6 +53,9 @@ namespace glow
         CUBE_MAP
     };
 
+    /*!
+     * Cube map face.
+     */
     enum class CubeFace
     {
         XPOS,
@@ -57,42 +66,113 @@ namespace glow
         ZNEG
     };
 
+    /*!
+     * Filter Mode
+     */
     enum class FilterMode
     {
         FILTER_NEAREST,
         FILTER_LINEAR
     };
 
+    /*!
+     * Texture
+     * 
+     * The textrue class can represent GL_TEXTURE_2D and GL_TEXTURE_CUBE_MAP.
+     */
     class GLOW_EXPORT Texture
     {
     public:
-
+        /*!
+         * Create an ampry texture handle.
+         */
         Texture();
 
-        Texture(const Texture&) = delete;
-
+        /*!
+         * Release texture handle.
+         */
         ~Texture();
 
-        const Texture& operator = (const Texture&) = delete;
-
+        /*!
+         * Get texture type.
+         *
+         * @return the type of texture
+         */
         TextureType get_type() const;
 
+        /*!
+         * Get texture size.
+         *
+         * @return the size of texture in pixels
+         */
         glm::uvec2 get_size() const;
 
+        /*!
+         * Get texture color mode.
+         *
+         * @return the color mode of texture
+         */
         ColorMode get_color_mode() const;
 
+        /*!
+         * Bind texture to a given slot.
+         *
+         * @param slot the texture slot to bind the texture to.
+         *
+         * @see Shader::set_uniform
+         */
         void bind(unsigned int slot);
 
+        /*!
+         * Unbind texture.
+         *
+         * @param slot the texture slot to bind the texture to.
+         */
         void unbind(unsigned int slot);
 
+        /*!
+         * Upload a 2D unsinged byte texture.
+         * 
+         * @param size the size in pixels
+         * @param mode the color mode
+         * @param data the memory to upload
+         * @param filter the filter mode           
+         */
         void upload_2d(glm::uvec2 size, ColorMode mode, void* data = nullptr, FilterMode filter = FilterMode::FILTER_LINEAR);
 
+        /*!
+         * Upload a 2D float texture.
+         * 
+         * @param size the size in pixels
+         * @param mode the color mode
+         * @param data the memory to upload
+         * @param filter the filter mode           
+         */
         void upload_2d_float(glm::uvec2 size, ColorMode mode, float* data = nullptr, FilterMode filter = FilterMode::FILTER_LINEAR);
 
+        /*!
+         * Upload a cube map texture.
+         * 
+         * @param size the size in pixels
+         * @param mode the color mode
+         * @param xpos the memory to upload
+         * @param xneg the memory to upload
+         * @param ypos the memory to upload
+         * @param yneg the memory to upload
+         * @param zpos the memory to upload
+         * @param zneg the memory to upload
+         * @param filter the filter mode           
+         */
         void upload_cube(glm::uint resolution, ColorMode mode, void* xpos = nullptr, void* xneg = nullptr, void* ypos = nullptr, void* yneg = nullptr, void* zpos = nullptr, void* zneg = nullptr, FilterMode filter = FilterMode::FILTER_LINEAR);
 
+        /*!
+         * Ask OpenGL to generate mipmaps for this texture.
+         */
         void generate_mipmaps();
 
+        /*!
+         * Get the total mipmap levels for this texture.
+         */
         int get_mipmap_levels() const;
 
     private:
@@ -100,6 +180,10 @@ namespace glow
         glm::uint    glid = 0u;
         glm::uvec2   size = {0u, 0u};
         ColorMode    mode = ColorMode::NO_COLOR_MODE;
+
+        Texture(const Texture&) = delete;
+        const Texture& operator = (const Texture&) = delete;
+
 
     friend class FrameBuffer;
     };

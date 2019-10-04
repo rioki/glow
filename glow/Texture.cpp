@@ -143,6 +143,7 @@ namespace glow
         assert(glGetError() == GL_NO_ERROR);
     }
 
+    // REVIEW why not remeber the slot this texture was bound to?
     void Texture::unbind(unsigned int slot)
     {
         glActiveTexture(GL_TEXTURE0 + slot);
@@ -182,6 +183,7 @@ namespace glow
         assert(glGetError() == GL_NO_ERROR);
     }
 
+    // REVIEW consider rolling upload_2d and upload_2d_float into one function.
     void Texture::upload_2d_float(glm::uvec2 s, ColorMode m, float* data, FilterMode filter)
     {
         assert(glid != 0);

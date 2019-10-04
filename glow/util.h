@@ -32,12 +32,26 @@
 
 namespace glow
 {
+	/*!
+	 * Clear all pending OpenGL errors.
+	 */
     GLOW_EXPORT
     void clear_errors();
 
+	/*!
+	 * Get the last OpenGL error as string.
+	 *
+	 * @return the last OpenGL error as string
+	 */
     GLOW_EXPORT
     std::string get_error();
 
+	/*!
+	 * Initialize glow in the current OpenGL context.
+	 *
+	 * You need to call init in each OpenGL context you intend to use glow
+	 * before calling anyhting else.
+	 */
     GLOW_EXPORT
     void init();
 }
