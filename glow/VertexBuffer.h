@@ -37,6 +37,9 @@
 
 namespace glow
 {
+    /*!
+     * Fact Type
+     */
     enum class FacesType
     {
         POINTS,
@@ -48,28 +51,59 @@ namespace glow
         TRIANGLE_FAN
     };
 
+    /*!
+     * Vertex Buffer
+     */
     class GLOW_EXPORT VertexBuffer
     {
     public:
-
+        /*! 
+         * Create and empty vertex buffer.
+         */
         VertexBuffer();
 
+        /*! 
+         * Free vertex buffer.
+         */
         ~VertexBuffer();
 
+        /*!
+         * Bind vertex buffer to shader.
+         *
+         * @param shader to bind to
+         */
         void bind(Shader& shader);
 
+        /*!
+         * Unbind vertex buffer.
+         */
         void unbind();
 
+        /*!
+         * Upload vertex values.
+         */
         void upload_values(const std::string& attribute, unsigned int stride, unsigned int count, const float* data);
 
+        /*!
+         * Upload vertex values.
+         */
         template <int N, glm::qualifier Q>
         void upload_values(const std::string& attribute, const std::vector<glm::vec<N, float, Q>>& values);
 
+        /*!
+         * Upload face indexes.
+         */
         void upload_indexes(FacesType type, unsigned int count, const unsigned int* data);
 
+        /*!
+         * Upload face indexes.
+         */
         template <int N, glm::qualifier Q>
         void upload_indexes(const std::vector<glm::vec<N, glm::uint, Q>>& indexes);
 
+        /*!
+         * Draw vertex buffer.
+         */
         void draw(unsigned int set = 0);
 
     private:
