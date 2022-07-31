@@ -13,23 +13,20 @@ jobs:
   build:
     strategy:
       matrix:
-        triplet: [x86-windows, x64-windows, x64-linux]
+        triplet: [x86-windows, x64-windows, x64-macos]
         include:
           - triplet: x86-windows
             system: windows-latest
           - triplet: x64-windows
             system: windows-latest
-          - triplet: x64-linux
-            system: ubuntu-bionic
+          - triplet: x64-macos
+            system: macos-latest
     runs-on: ${{ matrix.system }}
     env:
       VCPKG_DEFAULT_TRIPLET: ${{ matrix.triplet }}
     steps:
     - name: Checkout
       uses: actions/checkout@v3
-    - name: Install OpenGL dependency
-      if: matrix.triplet == 'x64-linux'
-      uses: openrndr/setup-opengl@v1.1
     - name: Install CMake
       uses: lukka/get-cmake@latest
     - name: Restore from cache and install vcpkg
