@@ -4,6 +4,9 @@ project(glow CXX)
 set(CMAKE_SHARED_LIBRARY_PREFIX)
 set(CMAKE_STATIC_LIBRARY_PREFIX)
 
+find_package(GLEW REQUIRED)
+find_package(glm CONFIG REQUIRED)
+
 set(HEADERS_GLOW
   glow/defines.h
   glow/FrameBuffer.h
@@ -31,6 +34,8 @@ set(SOURCES_GLOW
 
 # glow library
 add_library(glow ${SOURCES_GLOW})
+target_link_libraries(glow PRIVATE GLEW::GLEW)
+target_link_libraries(glow PRIVATE glm::glm)
 set_target_properties(glow PROPERTIES
     CXX_STANDARD 20
     PUBLIC_HEADER "${HEADERS_GLOW}"
