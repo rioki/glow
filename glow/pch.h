@@ -28,6 +28,7 @@
 #include <vector>
 #include <map>
 
+#define GLEW_NO_GLU
 #include <GL/glew.h>
 
 #include <glm/fwd.hpp>
