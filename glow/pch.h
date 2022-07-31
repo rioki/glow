@@ -28,7 +28,7 @@
 #include <vector>
 #include <map>
 
-#include <gl/glew.h>
+#include <GL/glew.h>
 
 #include <glm/fwd.hpp>
 #include <glm/glm.hpp>

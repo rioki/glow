@@ -21,7 +21,6 @@
 
 #include "pch.h"
 #include "Shader.h"
-
 #include "util.h"
 
 using namespace std::string_view_literals;

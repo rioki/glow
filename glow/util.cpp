@@ -22,11 +22,6 @@
 #include "pch.h"
 #include "util.h"
 
-#include <cassert>
-#include <stdexcept>
-#include <iostream>
-#include <GL/glew.h>
-
 #ifdef _WIN32
 #define NOMINMAX
 #include <Windows.h>

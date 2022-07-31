@@ -21,7 +21,6 @@
 
 #include "pch.h"
 #include "VertexBuffer.h"
-
 #include "util.h"
 
 namespace glow

@@ -21,7 +21,6 @@
 
 #include "pch.h"
 #include "Parameters.h"
-
 #include "util.h"
 
 namespace glow
