@@ -13,12 +13,14 @@ jobs:
   build:
     strategy:
       matrix:
-        triplet: [x86-windows, x64-windows, x64-macos]
+        triplet: [x86-windows, x64-windows, x64-linux, x64-macos]
         include:
           - triplet: x86-windows
             system: windows-latest
           - triplet: x64-windows
             system: windows-latest
+          - triplet: x64-linux
+            system: ubuntu-latest
           - triplet: x64-macos
             system: macos-latest
     runs-on: ${{ matrix.system }}
@@ -27,6 +29,11 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+    - name: Install Mesa OpenGL
+        if: matrix.triplet == 'x64-linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libgl1-mesa-dev
     - name: Install CMake
       uses: lukka/get-cmake@latest
     - name: Restore from cache and install vcpkg
