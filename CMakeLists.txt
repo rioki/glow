@@ -34,6 +34,7 @@ set(SOURCES_GLOW
 
 # glow library
 add_library(glow ${SOURCES_GLOW})
+set_property(TARGET glow PROPERTY CXX_STANDARD 20)
 target_link_libraries(glow PRIVATE GLEW::GLEW)
 target_link_libraries(glow PRIVATE glm::glm)
 set_target_properties(glow PROPERTIES
