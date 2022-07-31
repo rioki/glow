@@ -23,8 +23,12 @@
 
 #include <vector>
 #include <string>
-#include <source_location>
+
+// It's 2022, if your compiler does not have <format> in C++20
+// mode, talk to your compiler vendor; I will not work around it.
+#if !defined(NDEBUG) && defined(__cpp_lib_format)
 #include <format>
+#endif
 
 #include "defines.h"
 
@@ -44,33 +48,46 @@ namespace glow
     //! before calling anyhting else.
     GLOW_EXPORT void init();
 
-#ifndef NDEBUG
-    GLOW_EXPORT void trace(const std::source_location& location, const std::string_view msg) noexcept;
-
-    template <typename Arg0, typename ... Args>
-    void trace(const std::source_location& location, const std::string_view format, Arg0 arg0, Args ... args) noexcept
+#if !defined(NDEBUG) && defined(__cpp_lib_format)
+    constexpr std::string basename(const std::string& file) noexcept
     {
-        auto msg = std::format(format, arg0, std::forward<Args>(args)...);
-        trace(location, msg);
+        auto i = file.find_last_of("\\/");
+        if (i == std::string::npos)
+        {
+            return file;
+        }
+        else
+        {
+            return file.substr(i + 1);
+        }
     }
 
-    GLOW_EXPORT void handle_assert(const std::source_location& location, const std::string_view scond) noexcept;
+    GLOW_EXPORT void trace(const std::string& file, const unsigned int line, const std::string_view msg) noexcept;
 
-    GLOW_EXPORT void handle_fail(const std::source_location& location, const std::string_view message) noexcept;
+    template <typename Arg0, typename ... Args>
+    void trace(const std::string& file, const unsigned int line, const std::string_view format, Arg0 arg0, Args ... args) noexcept
+    {
+        auto msg = std::format(format, arg0, std::forward<Args>(args)...);
+        trace(file, line, msg);
+    }
+
+    GLOW_EXPORT void handle_assert(const std::string& file, const unsigned int line, const std::string_view scond) noexcept;
+
+    GLOW_EXPORT void handle_fail(const std::string& file, const unsigned int line, const std::string_view message) noexcept;
 
     //! Check if there is an OpenGL error.
-    GLOW_EXPORT void check_gl_error(const std::source_location& loc) noexcept;
+    GLOW_EXPORT void check_gl_error(const std::string& file, const unsigned int line) noexcept;
 #endif
 
     template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
     template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 }
 
-#ifndef NDEBUG
-#define GLOW_TRACE(MSG, ...)  ::dbg::trace(std::source_location::current(), MSG, __VA_ARGS__)
-#define GLOW_ASSERT(COND)    do { if (!(COND)) { ::glow::handle_assert(std::source_location::current(), #COND); } } while (false)
-#define GLOW_FAIL(MSG)       ::glow::handle_fail(std::source_location::current(), MSG)
-#define GLOW_CHECK_GLERROR() ::glow::check_gl_error(std::source_location::current())
+#if !defined(NDEBUG) && defined(__cpp_lib_format)
+#define GLOW_TRACE(MSG, ...)  ::glow::trace(::glow::basename(__FILE__), __LINE__, MSG, __VA_ARGS__)
+#define GLOW_ASSERT(COND)    do { if (!(COND)) { ::glow::handle_assert(::glow::basename(__FILE__), __LINE__, #COND); } } while (false)
+#define GLOW_FAIL(MSG)       ::glow::handle_fail(::glow::basename(__FILE__), __LINE__, MSG)
+#define GLOW_CHECK_GLERROR() ::glow::check_gl_error(::glow::basename(__FILE__), __LINE__)
 #else
 #define GLOW_TRACE(MSG, ...)
 #define GLOW_ASSERT(COND)

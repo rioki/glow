@@ -21,10 +21,6 @@
 
 #include "pch.h"
 #include "Texture.h"
-
-#include <cassert>
-#include <GL/glew.h>
-
 #include "util.h"
 
 namespace glow

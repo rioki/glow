@@ -21,7 +21,6 @@
 
 #include "pch.h"
 #include "Parameters.h"
-
 #include "util.h"
 
 namespace glow
@@ -53,12 +52,13 @@ namespace glow
 
     void apply(Shader& shader, const Parameters& parmeters) noexcept
     {
-        for (auto& [key, value] : parmeters.get_values())
+        for (const auto& value: parmeters.get_values())
         {
+            const auto& key = std::get<0>(value);
             std::visit(overloaded {
                 [&] (const std::shared_ptr<Texture>& texture) { GLOW_ASSERT(texture); shader.set_uniform(key, *texture); },
                 [&] (const auto& v)                           { shader.set_uniform(key, v);}
-            }, value);
+            }, std::get<1>(value));
         }
     }
 }

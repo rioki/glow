@@ -21,13 +21,15 @@
 
 #pragma once
 
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <array>
 #include <vector>
 #include <map>
 
-#include <gl/glew.h>
+#define GLEW_NO_GLU
+#include <GL/glew.h>
 
 #include <glm/fwd.hpp>
 #include <glm/glm.hpp>

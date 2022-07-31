@@ -21,10 +21,6 @@
 
 #include "pch.h"
 #include "FrameBuffer.h"
-
-#include <cassert>
-#include <gl/glew.h>
-
 #include "util.h"
 
 namespace glow

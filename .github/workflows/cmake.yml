@@ -1,0 +1,47 @@
+name: CMake
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        triplet: [x86-windows, x64-windows, x64-linux, x64-macos]
+        include:
+          - triplet: x86-windows
+            system: windows-latest
+          - triplet: x64-windows
+            system: windows-latest
+          - triplet: x64-linux
+            system: ubuntu-latest
+          - triplet: x64-macos
+            system: macos-latest
+    runs-on: ${{ matrix.system }}
+    env:
+      VCPKG_DEFAULT_TRIPLET: ${{ matrix.triplet }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Install Mesa OpenGL
+      if: matrix.triplet == 'x64-linux'
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y --no-install-recommends libxmu-dev libxi-dev libgl-dev libgl1-mesa-dev
+    - name: Install CMake
+      uses: lukka/get-cmake@latest
+    - name: Restore from cache and install vcpkg
+      uses: lukka/run-vcpkg@v10
+      with:
+        vcpkgGitCommitId: 66045de4dcc5da3d1029c02b606307f5951dcb22
+    - name: Build
+      uses: lukka/run-cmake@v10
+      with:
+        configurePreset: 'ninja'
+        buildPreset: 'ninja'
