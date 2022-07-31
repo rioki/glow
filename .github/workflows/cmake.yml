@@ -33,7 +33,7 @@ jobs:
       if: matrix.triplet == 'x64-linux'
       run: |
         sudo apt-get update -qq
-        sudo apt-get install -y --no-install-recommends libgl1-mesa-dev
+        sudo apt-get install -y --no-install-recommends libxmu-dev libxi-dev libgl-dev libgl1-mesa-dev
     - name: Install CMake
       uses: lukka/get-cmake@latest
     - name: Restore from cache and install vcpkg
