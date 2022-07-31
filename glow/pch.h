@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <array>

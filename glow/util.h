@@ -23,8 +23,10 @@
 
 #include <vector>
 #include <string>
+#ifndef NDEBUG
 #include <source_location>
 #include <format>
+#endif
 
 #include "defines.h"
 
