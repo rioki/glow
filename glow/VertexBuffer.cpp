@@ -91,7 +91,7 @@ namespace glow
         glBufferData(GL_ARRAY_BUFFER, count * stride * sizeof(float), data, GL_STATIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        buffers.emplace_back(attribute, stride, count, glid, 0);
+        buffers.push_back({attribute, stride, count, glid, 0});
 
         GLOW_CHECK_GLERROR();
     }
@@ -104,7 +104,7 @@ namespace glow
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(unsigned int), data, GL_STATIC_DRAW);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-        indexes.emplace_back(type, count, glid);
+        indexes.push_back({type, count, glid});
 
         GLOW_CHECK_GLERROR();
     }
