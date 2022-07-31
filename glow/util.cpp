@@ -83,7 +83,7 @@ namespace glow
         }
     }
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && defined(__cpp_lib_format)
     #ifdef _WIN32
     void show_message_box(const std::string_view& message) noexcept
     {
@@ -104,8 +104,6 @@ namespace glow
     #else
     // PORTME: Better suport for other platforms is desired, but not required.
     #endif
-
-
 
     void trace(const std::string& file, const unsigned int line, const std::string_view msg) noexcept
     {

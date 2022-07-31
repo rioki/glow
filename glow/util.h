@@ -23,7 +23,10 @@
 
 #include <vector>
 #include <string>
-#ifndef NDEBUG
+
+// It's 2022, if your compiler does not have <format> in C++20
+// mode, talk to your compiler vendor; I will not work around it.
+#if !defined(NDEBUG) && defined(__cpp_lib_format)
 #include <format>
 #endif
 
@@ -45,7 +48,7 @@ namespace glow
     //! before calling anyhting else.
     GLOW_EXPORT void init();
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && defined(__cpp_lib_format)
     constexpr std::string basename(const std::string& file) noexcept
     {
         auto i = file.find_last_of("\\/");
@@ -80,7 +83,7 @@ namespace glow
     template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 }
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && defined(__cpp_lib_format)
 #define GLOW_TRACE(MSG, ...)  ::glow::trace(::glow::basename(__FILE__), __LINE__, MSG, __VA_ARGS__)
 #define GLOW_ASSERT(COND)    do { if (!(COND)) { ::glow::handle_assert(::glow::basename(__FILE__), __LINE__, #COND); } } while (false)
 #define GLOW_FAIL(MSG)       ::glow::handle_fail(::glow::basename(__FILE__), __LINE__, MSG)
