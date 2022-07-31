@@ -24,11 +24,13 @@
 
 #include <cassert>
 #include <stdexcept>
-#include <atomic>
+#include <iostream>
 #include <GL/glew.h>
 
+#ifdef _WIN32
 #define NOMINMAX
 #include <Windows.h>
+#endif
 
 namespace glow
 {
@@ -82,7 +84,8 @@ namespace glow
     }
 
 #ifndef NDEBUG
-    void show_message_box_with_callstack(const std::string_view& message) noexcept
+    #ifdef _WIN32
+    void show_message_box(const std::string_view& message) noexcept
     {
         auto r = MessageBoxA(NULL, message.data(), "Assert Failed", MB_ABORTRETRYIGNORE|MB_ICONSTOP);
         switch (r)
@@ -98,6 +101,9 @@ namespace glow
             break;
         }
     }
+    #else
+    // PORTME: Better suport for other platforms is desired, but not required.
+    #endif
 
     std::string basename(const std::string& file) noexcept
     {
@@ -115,21 +121,33 @@ namespace glow
     void trace(const std::source_location& location, const std::string_view msg) noexcept
     {
         auto output = std::format("{}({}): {}\n", basename(location.file_name()), location.line(), msg);
+        #ifdef _WIN32
         OutputDebugStringA(output.data());
+        #else
+        std::cerr << output;
+        #endif
     }
 
     void handle_assert(const std::source_location& location, const std::string_view scond) noexcept
     {
         auto msg = std::format("Assertion '{}' failed.", scond);
         trace(location, msg);
-        show_message_box_with_callstack(msg);
+        #ifdef _WIN32
+        show_message_box(msg);
+        #else
+        std::terminate();
+        #endif
     }
 
     inline void handle_fail(const std::source_location& location, const std::string_view message) noexcept
     {
         auto msg = std::format("General Software Fault: '{}'.", message);
         trace(location, msg);
-        show_message_box_with_callstack(msg);
+        #ifdef _WIN32
+        show_message_box(msg);
+        #else
+        std::terminate();
+        #endif
     }
 
     void check_gl_error(const std::source_location& loc) noexcept
@@ -139,7 +157,11 @@ namespace glow
         {
             auto msg = std::format("OpenGL Error: {}!", gl_error_to_string(error));
             trace(loc, msg);
-            show_message_box_with_callstack(msg);
+            #ifdef _WIN32
+            show_message_box(msg);
+            #else
+            std::terminate();
+            #endif
         }
     }
 #endif
