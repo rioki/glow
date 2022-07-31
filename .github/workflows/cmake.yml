@@ -13,7 +13,7 @@ jobs:
   build:
     strategy:
       matrix:
-        triplet: [x86-windows, x64-windows, x64-linux, x64-macos]
+        triplet: [x86-windows, x64-windows, x64-linux]
         include:
           - triplet: x86-windows
             system: windows-latest
@@ -21,8 +21,6 @@ jobs:
             system: windows-latest
           - triplet: x64-linux
             system: ubuntu-bionic
-          - triplet: x64-macos
-            system: macos-latest
     runs-on: ${{ matrix.system }}
     env:
       VCPKG_DEFAULT_TRIPLET: ${{ matrix.triplet }}
