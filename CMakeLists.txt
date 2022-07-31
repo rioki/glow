@@ -34,8 +34,8 @@ set(SOURCES_GLOW
 
 # glow library
 add_library(glow ${SOURCES_GLOW})
-target_link_libraries(glow PRIVATE GLEW::GLEW)
-target_link_libraries(glow PRIVATE glm::glm)
+target_link_libraries(glow PUBLIC GLEW::GLEW)
+target_link_libraries(glow PUBLIC glm::glm)
 set_target_properties(glow PROPERTIES
     CXX_STANDARD 20
     PUBLIC_HEADER "${HEADERS_GLOW}"
