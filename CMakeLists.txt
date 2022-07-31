@@ -4,6 +4,9 @@ project(glow CXX)
 set(CMAKE_SHARED_LIBRARY_PREFIX)
 set(CMAKE_STATIC_LIBRARY_PREFIX)
 
+find_package(GLEW REQUIRED)
+find_package(glm CONFIG REQUIRED)
+
 set(HEADERS_GLOW
   glow/defines.h
   glow/FrameBuffer.h
