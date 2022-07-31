@@ -1,7 +1,5 @@
-//
 // OpenGL Object Wrapper
-//
-// Copyright 2016-2019 Sean Farrell <sean.farrell@rioki.org>
+// Copyright 2016-2022 Sean Farrell <sean.farrell@rioki.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,22 +18,18 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-//
 
+#include "pch.h"
 #include "VertexBuffer.h"
 
-#include <cassert>
-#include <GL/glew.h>
-
+#include "util.h"
 
 namespace glow
 {
-    VertexBuffer::VertexBuffer()
-    : bound(false), vao(0)
+    VertexBuffer::VertexBuffer() noexcept
     {
         glGenVertexArrays(1, &vao);
-
-        assert(glGetError() == GL_NO_ERROR);
+        GLOW_CHECK_GLERROR();
     }
 
     VertexBuffer::~VertexBuffer()
@@ -61,13 +55,12 @@ namespace glow
         glDeleteVertexArrays(1, &vao);
         vao = 0;
 
-        assert(glGetError() == GL_NO_ERROR);
+        GLOW_CHECK_GLERROR();
     }
 
-    void VertexBuffer::bind(Shader& shader)
+    void VertexBuffer::bind(Shader& shader) noexcept
     {
         glBindVertexArray(vao);
-        bound = true;
 
         for (auto& info: buffers)
         {
@@ -77,22 +70,20 @@ namespace glow
                 glBindBuffer(GL_ARRAY_BUFFER, info.glid);
                 glVertexAttribPointer(info.adr, info.stride, GL_FLOAT, GL_FALSE, 0, 0);
                 glEnableVertexAttribArray(info.adr);
-                assert(glGetError() == GL_NO_ERROR);
+                GLOW_CHECK_GLERROR();
             }
         }
 
-        assert(glGetError() == GL_NO_ERROR);
+        GLOW_CHECK_GLERROR();
     }
 
-    void VertexBuffer::unbind()
+    void VertexBuffer::unbind() noexcept
     {
         glBindVertexArray(0);
-        bound = false;
-
-        assert(glGetError() == GL_NO_ERROR);
+        GLOW_CHECK_GLERROR();
     }
 
-    void VertexBuffer::upload_values(const std::string& attribute, unsigned int stride, unsigned int count, const float* data)
+    void VertexBuffer::upload_values(const std::string& attribute, unsigned int stride, unsigned int count, const float* data) noexcept
     {
         unsigned int glid;
         glGenBuffers(1, &glid);
@@ -100,66 +91,59 @@ namespace glow
         glBufferData(GL_ARRAY_BUFFER, count * stride * sizeof(float), data, GL_STATIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        BufferInfo info = {attribute, stride, count, glid, 0};
-        buffers.push_back(info);
+        buffers.emplace_back(attribute, stride, count, glid, 0);
 
-        assert(glGetError() == GL_NO_ERROR);
+        GLOW_CHECK_GLERROR();
     }
 
-    void VertexBuffer::upload_indexes(FacesType type, unsigned int count, const unsigned int* data)
+    void VertexBuffer::upload_indexes(FacesType type, unsigned int count, const unsigned int* data) noexcept
     {
-        unsigned int glid;
+        auto glid = 0u;
         glGenBuffers(1, &glid);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glid);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(unsigned int), data, GL_STATIC_DRAW);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-        IndexInfo info = {type, count, glid};
-        indexes.push_back(info);
+        indexes.emplace_back(type, count, glid);
 
-        assert(glGetError() == GL_NO_ERROR);
+        GLOW_CHECK_GLERROR();
     }
 
-    void VertexBuffer::draw(unsigned int set)
+    constexpr GLenum get_gl_facetype(FacesType type)
     {
-        assert(bound);
-        assert(set < indexes.size());
-
-
-        IndexInfo iinfo = indexes[set];
-
-        GLenum gl_shape;
-        switch (iinfo.type)
+        switch (type)
         {
-            case FacesType::POINTS:
-                gl_shape = GL_POINTS;
-                break;
-            case FacesType::LINES:
-                gl_shape = GL_LINES;
-                break;
-            case FacesType::LINE_STRIP:
-                gl_shape = GL_LINE_STRIP;
-                break;
-            case FacesType::LINE_LOOP:
-                gl_shape = GL_LINE_LOOP;
-                break;
-            case FacesType::TRIANGLES:
-                gl_shape = GL_TRIANGLES;
-                break;
-            case FacesType::TRIANGLE_STRIP:
-                gl_shape = GL_TRIANGLE_STRIP;
-                break;
-            case FacesType::TRIANGLE_FAN:
-                gl_shape = GL_TRIANGLE_FAN;
-                break;
+        case FacesType::POINTS:
+            return GL_POINTS;
+        case FacesType::LINES:
+            return GL_LINES;
+        case FacesType::LINE_STRIP:
+            return GL_LINE_STRIP;
+        case FacesType::LINE_LOOP:
+            return GL_LINE_LOOP;
+        case FacesType::TRIANGLES:
+            return GL_TRIANGLES;
+        case FacesType::TRIANGLE_STRIP:
+            return GL_TRIANGLE_STRIP;
+        case FacesType::TRIANGLE_FAN:
+            return GL_TRIANGLE_FAN;
+        default:
+            GLOW_FAIL("Unknown FaceType");
+            return GL_TRIANGLES;
         }
+    }
+
+    void VertexBuffer::draw(unsigned int set) noexcept
+    {
+        GLOW_ASSERT(set < indexes.size());
+
+        auto iinfo    = indexes[set];
+        auto gl_shape = get_gl_facetype(iinfo.type);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iinfo.glid);
         glDrawElements(gl_shape, iinfo.count, GL_UNSIGNED_INT, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-        GLenum error = glGetError();
-        assert(error == GL_NO_ERROR);
-        //assert(glGetError() == GL_NO_ERROR);
+        GLOW_CHECK_GLERROR();
     }
 }

@@ -1,0 +1,9 @@
+{
+    "name": "rioki-glow",
+    "version": "0.2.0",
+    "builtin-baseline": "32ee2c76b0a498178996b0af942aec14c0e50b7d",
+    "dependencies": [
+        "glm",
+        "glew"
+    ]
+}

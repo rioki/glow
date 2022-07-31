@@ -1,7 +1,5 @@
-//
 // OpenGL Object Wrapper
-//
-// Copyright 2016-2019 Sean Farrell <sean.farrell@rioki.org>
+// Copyright 2016-2022 Sean Farrell <sean.farrell@rioki.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,76 +18,102 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-//
 
-#ifndef _GLOW_SHADER_H_
-#define _GLOW_SHADER_H_
+#pragma once
 
-#include <vector>
 #include <string>
+#include <string_view>
 #include <variant>
-#include <memory>
+#include <map>
 #include <glm/glm.hpp>
 
 #include "defines.h"
+#include "Texture.h"
 
 namespace glow
 {
-    class Texture;
-	
-	/*!
-	 * All accepted uniform variable types.
-	 */
-    typedef std::variant<bool, int, glm::uint, float,
-                         glm::ivec2, glm::uvec2, glm::vec2,
-                         glm::ivec3, glm::uvec3, glm::vec3,
-                         glm::ivec4, glm::uvec4, glm::vec4,
-                         glm::mat2, glm::mat3, glm::mat4> UniformValue;
+	//! All accepted uniform variable types.
+    using UniformValue = std::variant<bool, int, uint, float,
+                                      ivec2, uvec2, vec2,
+                                      ivec3, uvec3, vec3,
+                                      ivec4, uvec4, vec4,
+                                      mat2,  mat3,  mat4>;
 
-    /*!
-     * GLSL Shader Program
-     */
+    //! GLSL Shader
     class GLOW_EXPORT Shader
     {
     public:
-        
-        Shader();
-
+        Shader() noexcept = default;
+        //! Create shader from code and compile it
+        Shader(const std::string& code);
         ~Shader();
 
-        void set_vertex_code(const std::string& value);
+        //! Shader Code
+        //!
+        //! The shader code is one string with macros denoting the different parts.
+        //!
+        //! The following macros are currently used
+        //!
+        //! * GLOW_VERTEX: vertex program
+        //! * GLOW_FRAGMENT: fragment program
+        //!
+        //! @{
+        void set_code(const std::string& value) noexcept;
+        const std::string& get_code() const noexcept;
+        //! @}
 
-        const std::string& get_vertex_code() const;
-
-        void set_fragment_code(const std::string& value);
-
-        const std::string& get_fragment_code() const;
-
+        //! Compile the shader.
         void compile();
 
-        void bind();
+        //! Bind the shader.
+        //!
+        //! @note the shader must be compiled.
+        void bind() noexcept;
 
-        void unbind();
+        //! Unbind the shader.
+        void unbind() noexcept;
 
-        void set_uniform(const std::string_view id, const UniformValue& value);
+        //! Set uniform variable.
+        //!
+        //! @param name the uniform variable name
+        //! @param value the uniform value
+        //!
+        //! @note To bind textures first bind the texture to a given slot
+        //! and then bind the slot as uint to the variable.
+        void set_uniform(const std::string_view name, const UniformValue& value) noexcept;
 
-        void set_uniform(const std::string_view id, const std::shared_ptr<Texture>& value);
+        //! Bind texture to a uniform variable.
+        //!
+        //! This code will ensure that each texture gets a unique slot and
+        //! will remain consisten from call to call.
+        //!
+        //! @param name the uniform variable name
+        //! @param texture the texture to bind
+        void set_uniform(const std::string_view name, Texture& texture) noexcept;
 
-        unsigned int get_attribute(const std::string& name);
+        //! Get the texture slot for the given variable name.
+        uint get_texture_slot(const std::string_view name) noexcept;
 
-        void bind_output(const std::string& name, unsigned int channel);
+        //! Get attribute index.
+        //!
+        //! @param name the variable name
+        //! @return the index or -1
+        int get_attribute(const std::string_view name) noexcept;
+
+        //! Bind output to channel.
+        //!
+        //! @param name the variable name
+        //! @param channel the chanel index.
+        void bind_output(const std::string_view name, uint channel) noexcept;
 
     private:
-        bool         bound;
-        std::string  vertex_code;
-        std::string  fragment_code;
-        unsigned int program_id;
-        glm::uint    texture_slot = 0u;
+        std::string  code;
+        uint program_id = 0;
+
+        uint last_texture_slot = 0u;
+        std::map<std::string, uint, std::less<>> texture_slots;
 
         Shader(const Shader&) = delete;
         const Shader& operator = (const Shader&) = delete;
-
     };
 }
-
-#endif

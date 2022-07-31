@@ -19,12 +19,46 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "defines.h"
+#include "pch.h"
+#include "Parameters.h"
 
 #include "util.h"
-#include "Shader.h"
-#include "VertexBuffer.h"
-#include "Texture.h"
-#include "FrameBuffer.h"
+
+namespace glow
+{
+    Parameters::Parameters(const std::map<std::string, Value>& v) noexcept
+    : values(v) {}
+
+    void Parameters::set_value(const std::string& id, const Value& value) noexcept
+    {
+        values[id] = value;
+    }
+
+    bool Parameters::has_value(const std::string& id) const noexcept
+    {
+        return values.find(id) != end(values);
+    }
+
+    const Parameters::Value& Parameters::get_value(const std::string& id) const noexcept
+    {
+        auto i = values.find(id);
+        GLOW_ASSERT(i != end(values));
+        return i->second;
+    }
+
+    const std::map<std::string, Parameters::Value>& Parameters::get_values() const
+    {
+        return values;
+    }
+
+    void apply(Shader& shader, const Parameters& parmeters) noexcept
+    {
+        for (auto& [key, value] : parmeters.get_values())
+        {
+            std::visit(overloaded {
+                [&] (const std::shared_ptr<Texture>& texture) { GLOW_ASSERT(texture); shader.set_uniform(key, *texture); },
+                [&] (const auto& v)                           { shader.set_uniform(key, v);}
+            }, value);
+        }
+    }
+}

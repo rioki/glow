@@ -1,7 +1,5 @@
-//
 // OpenGL Object Wrapper
-//
-// Copyright 2016-2019 Sean Farrell <sean.farrell@rioki.org>
+// Copyright 2016-2022 Sean Farrell <sean.farrell@rioki.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,10 +18,8 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-//
 
-#ifndef _GLOW_VERTEX_BUFFER_H_
-#define _GLOW_VERTEX_BUFFER_H_
+#pragma once
 
 #include "defines.h"
 
@@ -33,13 +29,17 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "util.h"
 #include "Shader.h"
 
 namespace glow
 {
-    /*!
-     * Fact Type
-     */
+    constexpr auto VERTEX   = "glow_Vertex";
+    constexpr auto NORMAL   = "glow_Normal";
+    constexpr auto TANGENT  = "glow_Tangent";
+    constexpr auto TEXCOORD = "glow_TexCoord";
+
+    //! Face Type
     enum class FacesType
     {
         POINTS,
@@ -51,60 +51,40 @@ namespace glow
         TRIANGLE_FAN
     };
 
-    /*!
-     * Vertex Buffer
-     */
+    //! Vertex Buffer
     class GLOW_EXPORT VertexBuffer
     {
     public:
-        /*! 
-         * Create and empty vertex buffer.
-         */
-        VertexBuffer();
+        //! Create and empty vertex buffer.
+        VertexBuffer() noexcept;
 
-        /*! 
-         * Free vertex buffer.
-         */
+        //! Free vertex buffer.
         ~VertexBuffer();
 
-        /*!
-         * Bind vertex buffer to shader.
-         *
-         * @param shader to bind to
-         */
-        void bind(Shader& shader);
+        //!Bind vertex buffer to shader.
+        //!
+        //!@param shader to bind to
+        void bind(Shader& shader) noexcept;
 
-        /*!
-         * Unbind vertex buffer.
-         */
-        void unbind();
+        //! Unbind vertex buffer.
+        void unbind() noexcept;
 
-        /*!
-         * Upload vertex values.
-         */
-        void upload_values(const std::string& attribute, unsigned int stride, unsigned int count, const float* data);
+        //! Upload vertex values.
+        void upload_values(const std::string& attribute, unsigned int stride, unsigned int count, const float* data) noexcept;
 
-        /*!
-         * Upload vertex values.
-         */
+        //! Upload vertex values.
         template <int N, glm::qualifier Q>
-        void upload_values(const std::string& attribute, const std::vector<glm::vec<N, float, Q>>& values);
+        void upload_values(const std::string& attribute, const std::vector<glm::vec<N, float, Q>>& values) noexcept;
 
-        /*!
-         * Upload face indexes.
-         */
-        void upload_indexes(FacesType type, unsigned int count, const unsigned int* data);
+        //! Upload face indexes.
+        void upload_indexes(FacesType type, unsigned int count, const unsigned int* data) noexcept;
 
-        /*!
-         * Upload face indexes.
-         */
+        //! Upload face indexes.
         template <int N, glm::qualifier Q>
-        void upload_indexes(const std::vector<glm::vec<N, glm::uint, Q>>& indexes);
+        void upload_indexes(const std::vector<glm::vec<N, glm::uint, Q>>& indexes) noexcept;
 
-        /*!
-         * Draw vertex buffer.
-         */
-        void draw(unsigned int set = 0);
+        //! Draw vertex buffer.
+        void draw(unsigned int set = 0) noexcept;
 
     private:
         struct BufferInfo
@@ -123,40 +103,43 @@ namespace glow
             unsigned int  glid;
         };
 
-        bool                    bound;
-        unsigned int            vao;
+        unsigned int            vao = 0;
         std::vector<BufferInfo> buffers;
         std::vector<IndexInfo>  indexes;
+
+        VertexBuffer(const VertexBuffer&) = delete;
+        VertexBuffer& operator = (const VertexBuffer&) = delete;
     };
 
     template <int N, glm::qualifier Q>
-    void VertexBuffer::upload_values(const std::string& attribute, const std::vector<glm::vec<N, float, Q>>& values)
+    void VertexBuffer::upload_values(const std::string& attribute, const std::vector<glm::vec<N, float, Q>>& values) noexcept
     {
-        upload_values(attribute, N, values.size(), glm::value_ptr(values[0]));
+        upload_values(attribute, N, static_cast<uint>(values.size()), glm::value_ptr(values[0]));
+    }
+
+    constexpr FacesType get_face_type(uint N) noexcept
+    {
+        switch (N)
+        {
+        case 1:
+            return FacesType::POINTS;
+        case 2:
+            return FacesType::LINES;
+        case 3:
+            return FacesType::TRIANGLES;
+        case 4:
+            GLOW_FAIL("OpenGL does not support vertex buffers with quads.");
+            return FacesType::TRIANGLES;
+        default:
+            GLOW_FAIL("Unknown index type.");
+            return FacesType::TRIANGLES;
+        }
     }
 
     template <int N, glm::qualifier Q>
-    void VertexBuffer::upload_indexes(const std::vector<glm::vec<N, glm::uint, Q>>& indexes)
+    void VertexBuffer::upload_indexes(const std::vector<glm::vec<N, glm::uint, Q>>& indexes) noexcept
     {
-        FacesType type;
-        switch (N)
-        {
-            case 1:
-                type = FacesType::POINTS;
-                break;
-            case 2:
-                type = FacesType::LINES;
-                break;
-            case 3:
-                type = FacesType::TRIANGLES;
-                break;
-            case 4:
-                throw std::logic_error("OpenGL does not support vertex buffers with quads.");
-            default:
-                throw std::logic_error("Unknown index type.");
-        }
-        upload_indexes(type, indexes.size() * N, glm::value_ptr(indexes[0]));
+        auto type = get_face_type(N);
+        upload_indexes(type, static_cast<uint>(indexes.size()) * N, glm::value_ptr(indexes[0]));
     }
 }
-
-#endif

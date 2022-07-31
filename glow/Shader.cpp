@@ -1,7 +1,5 @@
-//
 // OpenGL Object Wrapper
-//
-// Copyright 2016-2019 Sean Farrell <sean.farrell@rioki.org>
+// Copyright 2016-2022 Sean Farrell <sean.farrell@rioki.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,24 +18,31 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-//
 
+#include "pch.h"
 #include "Shader.h"
 
-#include <cassert>
-#include <fstream>
-#include <sstream>
-
-#include <GL/glew.h>
-#include <glm/gtc/type_ptr.hpp>
-
 #include "util.h"
-#include "Texture.h"
+
+using namespace std::string_view_literals;
 
 namespace glow
 {
-    Shader::Shader()
-    : bound(false), program_id(0) {}
+    constexpr auto CODE_PREFIX =
+        "#version 430\n"
+        "#define GLOW_VERSION 20\n"; // 0.2.0
+
+    constexpr auto VERTEX_PREFIX =
+        "#define GLOW_VERTEX\n";
+
+    constexpr auto FRAGMENT_PREFIX =
+        "#define GLOW_FRAGMENT\n";
+
+    Shader::Shader(const std::string& c)
+    : code(c)
+    {
+        compile();
+    }
 
     Shader::~Shader()
     {
@@ -45,70 +50,61 @@ namespace glow
         {
             glDeleteProgram(program_id);
             program_id = 0;
-
-            assert(glGetError() == GL_NO_ERROR);
+            GLOW_CHECK_GLERROR();
         }
     }
 
-    void Shader::set_vertex_code(const std::string& value)
+    void Shader::set_code(const std::string& value) noexcept
     {
-        vertex_code = value;
+        code = value;
     }
 
-    const std::string& Shader::get_vertex_code() const
+    const std::string& Shader::get_code() const noexcept
     {
-        return vertex_code;
-    }
-
-    void Shader::set_fragment_code(const std::string& value)
-    {
-        fragment_code = value;
-    }
-
-    const std::string& Shader::get_fragment_code() const
-    {
-        return fragment_code;
+        return code;
     }
 
     void Shader::compile()
     {
-        assert(program_id == 0);
+        GLOW_ASSERT(program_id == 0);
 
-        int status = 0;
-        char logstr[256];
+        auto status = 0;
+        auto logstr = std::array<char, 256>();
 
-        const GLchar* vbuff[1] = { vertex_code.c_str() };
+        auto vbuff = std::array<const char*, 3>{CODE_PREFIX, VERTEX_PREFIX, code.data()};
 
         unsigned int vertex_id = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertex_id, 1, vbuff, NULL);
+        glShaderSource(vertex_id, static_cast<GLsizei>(vbuff.size()), vbuff.data(), NULL);
         glCompileShader(vertex_id);
 
-        glGetShaderInfoLog(vertex_id, 256, NULL, logstr);
+        glGetShaderInfoLog(vertex_id, static_cast<GLsizei>(logstr.size()), NULL, logstr.data());
 
         glGetShaderiv(vertex_id, GL_COMPILE_STATUS, &status);
         if (!status)
         {
             glDeleteShader(vertex_id);
-            throw std::runtime_error(logstr);
+            throw std::runtime_error(logstr.data());
         }
 
-        const GLchar* fbuff[1] = { fragment_code.c_str() };
+        GLOW_CHECK_GLERROR();
+
+        auto fbuff = std::array<const char*, 3>{CODE_PREFIX, FRAGMENT_PREFIX, code.data()};
 
         unsigned int fragment_id = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragment_id, 1, fbuff, NULL);
+        glShaderSource(fragment_id,  static_cast<GLsizei>(fbuff.size()), fbuff.data(), NULL);
         glCompileShader(fragment_id);
 
-        glGetShaderInfoLog(fragment_id, 256, NULL, logstr);
+        glGetShaderInfoLog(fragment_id, static_cast<GLsizei>(logstr.size()), NULL, logstr.data());
 
         glGetShaderiv(fragment_id, GL_COMPILE_STATUS, &status);
         if (!status)
         {
             glDeleteShader(vertex_id);
             glDeleteShader(fragment_id);
-            throw std::runtime_error(logstr);
+            throw std::runtime_error(logstr.data());
         }
 
-        assert(glGetError() == GL_NO_ERROR);
+        GLOW_CHECK_GLERROR();
 
         program_id = glCreateProgram();
         glAttachShader(program_id, vertex_id);
@@ -117,7 +113,7 @@ namespace glow
         assert(glGetError() == GL_NO_ERROR);
         glLinkProgram(program_id);
 
-        glGetProgramInfoLog(program_id, 256, NULL, logstr);
+        glGetShaderInfoLog(vertex_id,  static_cast<GLsizei>(logstr.size()), NULL, logstr.data());
 
         glGetProgramiv(program_id, GL_LINK_STATUS, &status);
         if (!status)
@@ -125,7 +121,7 @@ namespace glow
             glDeleteShader(vertex_id);
             glDeleteShader(fragment_id);
             glDeleteProgram(program_id);
-            throw std::runtime_error(logstr);
+            throw std::runtime_error(logstr.data());
         }
 
         // NOTE: glDeleteShader() actually does not delete the shader, it only
@@ -134,89 +130,82 @@ namespace glow
         glDeleteShader(vertex_id);
         glDeleteShader(fragment_id);
 
-        assert(glGetError() == GL_NO_ERROR);
+        GLOW_CHECK_GLERROR();
     }
 
-    void Shader::bind()
+    void Shader::bind() noexcept
     {
-        assert(program_id != 0);
-
+        GLOW_ASSERT(program_id != 0);
         glUseProgram(program_id);
-        bound        = true;
-        texture_slot = 0u;
-
-        assert(glGetError() == GL_NO_ERROR);
+        GLOW_CHECK_GLERROR();
     }
 
-    void Shader::unbind()
+    void Shader::unbind() noexcept
     {
         glUseProgram(0);
-        bound = false;
-
-        assert(glGetError() == GL_NO_ERROR);
+        GLOW_CHECK_GLERROR();
     }
 
-    template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-    template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
-
-    void Shader::set_uniform(const std::string_view id, const UniformValue& value)
+    void Shader::set_uniform(const std::string_view id, const UniformValue& value) noexcept
     {
-        assert(bound == true);
-
-        int location = glGetUniformLocation(program_id, id.data());
-        if (location != -1)
+        GLOW_ASSERT(program_id != 0);
+        if (int location = glGetUniformLocation(program_id, id.data()); location != -1)
         {
             std::visit(overloaded {
-            [&] (bool v) { glUniform1i(location, v); },
-            [&] (int v) { glUniform1i(location, v); },
-            [&] (glm::uint v) { glUniform1i(location, v); },
-            [&] (float v) { glUniform1f(location, v); },
-            [&] (const glm::ivec2 v) { glUniform2i(location, v.x, v.y); },
-            [&] (const glm::uvec2 v) { glUniform2i(location, v.x, v.y); },
-            [&] (const glm::vec2 v) { glUniform2f(location, v.x, v.y); },
-            [&] (const glm::ivec3 v) { glUniform3i(location, v.x, v.y, v.z); },
-            [&] (const glm::uvec3 v) { glUniform3i(location, v.x, v.y, v.z); },
-            [&] (const glm::vec3 v) { glUniform3f(location, v.x, v.y, v.z); },
-            [&] (const glm::ivec4 v) { glUniform4i(location, v.x, v.y, v.z, v.w); },
-            [&] (const glm::uvec4 v) { glUniform4i(location, v.x, v.y, v.z, v.w); },
-            [&] (const glm::vec4 v) { glUniform4f(location, v.x, v.y, v.z, v.w); },
-            [&] (const glm::mat2 v) { glUniformMatrix2fv(location, 1u, GL_FALSE, glm::value_ptr(v)); },
-            [&] (const glm::mat3 v) { glUniformMatrix3fv(location, 1u, GL_FALSE, glm::value_ptr(v)); },
-            [&] (const glm::mat4 v) { glUniformMatrix4fv(location, 1u, GL_FALSE, glm::value_ptr(v)); },
+            [&] (bool v)         { glUniform1i(location, v); },
+            [&] (int v)          { glUniform1i(location, v); },
+            [&] (uint v)         { glUniform1i(location, v); },
+            [&] (float v)        { glUniform1f(location, v); },
+            [&] (const ivec2& v) { glUniform2i(location, v.x, v.y); },
+            [&] (const uvec2& v) { glUniform2i(location, v.x, v.y); },
+            [&] (const vec2& v)  { glUniform2f(location, v.x, v.y); },
+            [&] (const ivec3& v) { glUniform3i(location, v.x, v.y, v.z); },
+            [&] (const uvec3& v) { glUniform3i(location, v.x, v.y, v.z); },
+            [&] (const vec3& v)  { glUniform3f(location, v.x, v.y, v.z); },
+            [&] (const ivec4& v) { glUniform4i(location, v.x, v.y, v.z, v.w); },
+            [&] (const uvec4& v) { glUniform4i(location, v.x, v.y, v.z, v.w); },
+            [&] (const vec4& v)  { glUniform4f(location, v.x, v.y, v.z, v.w); },
+            [&] (const mat2& v)  { glUniformMatrix2fv(location, 1u, GL_FALSE, glm::value_ptr(v)); },
+            [&] (const mat3& v)  { glUniformMatrix3fv(location, 1u, GL_FALSE, glm::value_ptr(v)); },
+            [&] (const mat4& v)  { glUniformMatrix4fv(location, 1u, GL_FALSE, glm::value_ptr(v)); }
             }, value);
         }
     }
 
-    void Shader::set_uniform(const std::string_view id, const std::shared_ptr<Texture>& value)
+    void Shader::set_uniform(const std::string_view name, Texture& texture) noexcept
     {
-        assert(bound);
-        if (value == nullptr)
-        {
-            throw std::invalid_argument("Texture value is null.");
-        }
-        value->bind(texture_slot);
-        set_uniform(id, texture_slot);
-        texture_slot++;
+        auto slot = get_texture_slot(name);
+        texture.bind(slot);
+        set_uniform(name, slot);
     }
 
-    unsigned int Shader::get_attribute(const std::string & name)
+    uint Shader::get_texture_slot(const std::string_view name) noexcept
     {
-        assert(bound);
+        if (auto i = texture_slots.find(name); i != end(texture_slots))
+        {
+            return std::get<uint>(*i);
+        }
 
-        unsigned int id = glGetAttribLocation(program_id, name.c_str());
+        auto slot = last_texture_slot;
+        texture_slots[std::string{name}] = slot;
+        last_texture_slot++;
 
-        assert(glGetError() == GL_NO_ERROR);
+        return slot;
+    }
 
+    int Shader::get_attribute(const std::string_view name) noexcept
+    {
+        GLOW_ASSERT(program_id != 0);
+        auto id = glGetAttribLocation(program_id, name.data());
+        GLOW_CHECK_GLERROR();
         return id;
     }
 
-    void Shader::bind_output(const std::string& name, unsigned int channel)
+    void Shader::bind_output(const std::string_view name, uint channel) noexcept
     {
-        assert(bound);
-
-        glBindFragDataLocation(program_id, channel, name.c_str());
-
-        assert(glGetError() == GL_NO_ERROR);
+        GLOW_ASSERT(program_id != 0);
+        glBindFragDataLocation(program_id, channel, name.data());
+        GLOW_CHECK_GLERROR();
     }
 
 }

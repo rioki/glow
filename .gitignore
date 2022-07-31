@@ -1,6 +1,14 @@
-.vs
-x86
+
+# Build Output
+
+x86 
 x64
+
+# Visual Studio Temp Files
+
+.vs
 *.user
-/packages
-packages.config
+
+# Vcpkg Output
+
+vcpkg_installed
