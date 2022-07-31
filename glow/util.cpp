@@ -105,22 +105,11 @@ namespace glow
     // PORTME: Better suport for other platforms is desired, but not required.
     #endif
 
-    std::string basename(const std::string& file) noexcept
-    {
-        auto i = file.find_last_of("\\/");
-        if (i == std::string::npos)
-        {
-            return file;
-        }
-        else
-        {
-            return file.substr(i + 1);
-        }
-    }
 
-    void trace(const std::source_location& location, const std::string_view msg) noexcept
+
+    void trace(const std::string& file, const unsigned int line, const std::string_view msg) noexcept
     {
-        auto output = std::format("{}({}): {}\n", basename(location.file_name()), location.line(), msg);
+        auto output = std::format("{}({}): {}\n", file, line, msg);
         #ifdef _WIN32
         OutputDebugStringA(output.data());
         #else
@@ -128,10 +117,10 @@ namespace glow
         #endif
     }
 
-    void handle_assert(const std::source_location& location, const std::string_view scond) noexcept
+    void handle_assert(const std::string& file, const unsigned int line, const std::string_view scond) noexcept
     {
         auto msg = std::format("Assertion '{}' failed.", scond);
-        trace(location, msg);
+        trace(file, line, msg);
         #ifdef _WIN32
         show_message_box(msg);
         #else
@@ -139,10 +128,10 @@ namespace glow
         #endif
     }
 
-    inline void handle_fail(const std::source_location& location, const std::string_view message) noexcept
+    inline void handle_fail(const std::string& file, const unsigned int line, const std::string_view message) noexcept
     {
         auto msg = std::format("General Software Fault: '{}'.", message);
-        trace(location, msg);
+        trace(file, line, msg);
         #ifdef _WIN32
         show_message_box(msg);
         #else
@@ -150,13 +139,13 @@ namespace glow
         #endif
     }
 
-    void check_gl_error(const std::source_location& loc) noexcept
+    void check_gl_error(const std::string& file, const unsigned int line) noexcept
     {
         auto error = glGetError();
         if (error != GL_NO_ERROR)
         {
             auto msg = std::format("OpenGL Error: {}!", gl_error_to_string(error));
-            trace(loc, msg);
+            trace(file, line, msg);
             #ifdef _WIN32
             show_message_box(msg);
             #else
