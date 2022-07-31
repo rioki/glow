@@ -30,10 +30,10 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
     - name: Install Mesa OpenGL
-        if: matrix.triplet == 'x64-linux'
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends libgl1-mesa-dev
+      if: matrix.triplet == 'x64-linux'
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y --no-install-recommends libgl1-mesa-dev
     - name: Install CMake
       uses: lukka/get-cmake@latest
     - name: Restore from cache and install vcpkg
