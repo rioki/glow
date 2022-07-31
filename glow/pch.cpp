@@ -19,25 +19,4 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-//! GLOW Version Number
-#define GLOW_VERSION "0.2.0"
-
-#ifdef _WIN32
-#define GLOW_EXPORT __declspec(dllexport)
-#else
-#define GLOW_EXPORT
-#endif
-
-// disable silly warnings
-#ifndef _MSVC
-#pragma warning(disable: 4251)
-#endif
-
-#include <glm/fwd.hpp>
-
-namespace glow
-{
-    using namespace glm;
-}
+#include "pch.h"

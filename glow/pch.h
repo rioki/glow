@@ -21,23 +21,14 @@
 
 #pragma once
 
-//! GLOW Version Number
-#define GLOW_VERSION "0.2.0"
+#include <string>
+#include <string_view>
+#include <array>
+#include <vector>
+#include <map>
 
-#ifdef _WIN32
-#define GLOW_EXPORT __declspec(dllexport)
-#else
-#define GLOW_EXPORT
-#endif
-
-// disable silly warnings
-#ifndef _MSVC
-#pragma warning(disable: 4251)
-#endif
+#include <gl/glew.h>
 
 #include <glm/fwd.hpp>
-
-namespace glow
-{
-    using namespace glm;
-}
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>

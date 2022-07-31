@@ -1,7 +1,5 @@
-//
 // OpenGL Object Wrapper
-//
-// Copyright 2016-2019 Sean Farrell <sean.farrell@rioki.org>
+// Copyright 2016-2022 Sean Farrell <sean.farrell@rioki.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,104 +18,60 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-//
 
+#include "pch.h"
 #include "Texture.h"
 
 #include <cassert>
 #include <GL/glew.h>
 
-#include "Shader.h"
-#include "FrameBuffer.h"
-#include "VertexBuffer.h"
+#include "util.h"
 
 namespace glow
 {
-    GLenum color2gl(ColorMode mode)
-    {
-        switch (mode)
-        {
-        case ColorMode::MONO:
-            return GL_ALPHA;
-        case ColorMode::RGB:
-            return GL_RGB;
-        case ColorMode::RGBA:
-            return GL_RGBA;
-        case ColorMode::DEPTH:
-            return GL_DEPTH_COMPONENT;
-        default:
-            assert(false && "invalid mode");
-            return 0;
-        }
-    }
-
-    GLenum nchanels(ColorMode mode)
-    {
-        switch (mode)
-        {
-        case ColorMode::MONO:
-            return 1;
-        case ColorMode::RGB:
-            return 3;
-        case ColorMode::RGBA:
-            return 4;
-        case ColorMode::DEPTH:
-            return 1;
-        default:
-            assert(false && "invalid mode");
-            return 0;
-        }
-    }
-
-    GLenum color2gl_float(ColorMode mode)
-    {
-        switch (mode)
-        {
-        case ColorMode::MONO:
-            return GL_ALPHA32F_EXT;
-        case ColorMode::RGB:
-            return GL_RGB32F;
-        case ColorMode::RGBA:
-            return GL_RGBA32F;
-        case ColorMode::DEPTH:
-            return GL_DEPTH_COMPONENT32F;
-        default:
-            assert(false && "invalid mode");
-            return 0;
-        }
-    }
-
-    Texture::Texture()
+    Texture::Texture(const std::string_view debug_label) noexcept
     {
         glGenTextures(1, &glid);
-        assert(glGetError() == GL_NO_ERROR);
+        GLOW_CHECK_GLERROR();
+
+        #ifndef NDEBUG
+        glBindTexture(GL_TEXTURE_2D, glid);
+        glObjectLabel(GL_TEXTURE, glid, debug_label.size(), debug_label.data());
+        GLOW_CHECK_GLERROR();
+        glBindTexture(GL_TEXTURE_2D, 0);
+        #endif
     }
 
     Texture::~Texture()
     {
         glDeleteTextures(1, &glid);
         glid = 0;
-        assert(glGetError() == GL_NO_ERROR);
+        GLOW_CHECK_GLERROR();
     }
 
-    TextureType Texture::get_type() const
+    TextureType Texture::get_type() const noexcept
     {
         return type;
     }
 
-    glm::uvec2 Texture::get_size() const
+    glm::uvec2 Texture::get_size() const noexcept
     {
         return size;
     }
 
-    ColorMode Texture::get_color_mode() const
+    ColorMode Texture::get_color_mode() const noexcept
     {
-        return mode;
+        return color;
     }
 
-    void Texture::bind(unsigned int slot)
+    DataType Texture::get_data_type() const noexcept
     {
-        assert(glid != 0);
+        return data;
+    }
+
+    void Texture::bind(glm::uint slot) noexcept
+    {
+        GLOW_ASSERT(glid != 0);
 
         switch (type)
         {
@@ -135,100 +89,268 @@ namespace glow
                 glBindTexture(GL_TEXTURE_CUBE_MAP, glid);
                 break;
             default:
-                assert(false && "invalid type");
+                GLOW_FAIL("invalid type");
                 break;
         }
 
-
-        assert(glGetError() == GL_NO_ERROR);
+        last_slot = slot;
+        GLOW_CHECK_GLERROR();
     }
 
-    // REVIEW why not remeber the slot this texture was bound to?
-    void Texture::unbind(unsigned int slot)
+    void Texture::unbind() noexcept
     {
-        glActiveTexture(GL_TEXTURE0 + slot);
+        glActiveTexture(GL_TEXTURE0 + last_slot);
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    void Texture::upload_2d(glm::uvec2 s, ColorMode m, void* data, FilterMode filter)
+    GLenum glinternalformat(ColorMode color, DataType data) noexcept
     {
-        assert(glid != 0);
+        switch (data)
+        {
+        case DataType::INT8:
+            switch (color)
+            {
+            case ColorMode::R:
+                return GL_R8I;
+            case ColorMode::RG:
+                return GL_RG8I;
+            case ColorMode::RGB:
+            case ColorMode::BGR:
+                return GL_RGB8I;
+            case ColorMode::RGBA:
+            case ColorMode::BGRA:
+                return GL_RGBA8I;
+            default:
+                GLOW_FAIL("Unexpected color mode.");
+                return GL_RGBA8I;
+            }
+        case DataType::UINT8:
+            switch (color)
+            {
+            case ColorMode::R:
+                return GL_RED;
+            case ColorMode::RG:
+                return GL_RG;
+            case ColorMode::RGB:
+            case ColorMode::BGR:
+                return GL_RGB;
+            case ColorMode::RGBA:
+            case ColorMode::BGRA:
+                return GL_RGBA;
+            default:
+                GLOW_FAIL("Unexpected color mode.");
+                return GL_RGBA;
+            }
+        case DataType::INT16:
+            switch (color)
+            {
+            case ColorMode::R:
+                return GL_R16I;
+            case ColorMode::RG:
+                return GL_RG16I;
+            case ColorMode::RGB:
+            case ColorMode::BGR:
+                return GL_RGB16I;
+            case ColorMode::RGBA:
+            case ColorMode::BGRA:
+                return GL_RGBA16I;
+            default:
+                GLOW_FAIL("Unexpected color mode.");
+                return GL_RGBA16I;
+            }
+        case DataType::UINT16:
+            switch (color)
+            {
+            case ColorMode::R:
+                return GL_R16UI;
+            case ColorMode::RG:
+                return GL_RG16UI;
+            case ColorMode::RGB:
+            case ColorMode::BGR:
+                return GL_RGB16UI;
+            case ColorMode::RGBA:
+            case ColorMode::BGRA:
+                return GL_RGBA16UI;
+            default:
+                GLOW_FAIL("Unexpected color mode.");
+                return GL_RGBA16UI;
+            }
+        case DataType::INT32:
+            switch (color)
+            {
+            case ColorMode::R:
+                return GL_R32I;
+            case ColorMode::RG:
+                return GL_RG32I;
+            case ColorMode::RGB:
+            case ColorMode::BGR:
+                return GL_RGB32I;
+            case ColorMode::RGBA:
+            case ColorMode::BGRA:
+                return GL_RGBA32I;
+            default:
+                GLOW_FAIL("Unexpected color mode.");
+                return GL_RGBA32I;
+            }
+        case DataType::UINT32:
+            switch (color)
+            {
+            case ColorMode::R:
+                return GL_R32UI;
+            case ColorMode::RG:
+                return GL_RG32UI;
+            case ColorMode::RGB:
+            case ColorMode::BGR:
+                return GL_RGB32UI;
+            case ColorMode::RGBA:
+            case ColorMode::BGRA:
+                return GL_RGBA32UI;
+            default:
+                GLOW_FAIL("Unexpected color mode.");
+                return GL_RGBA32UI;
+            }
+        case DataType::FLOAT:
+        case DataType::DOUBLE:
+            switch (color)
+            {
+            case ColorMode::R:
+                return GL_R32F;
+            case ColorMode::RG:
+                return GL_RG32F;
+            case ColorMode::RGB:
+            case ColorMode::BGR:
+                return GL_RGB32F;
+            case ColorMode::RGBA:
+            case ColorMode::BGRA:
+                return GL_RGBA32F;
+            default:
+                GLOW_FAIL("Unexpected color mode.");
+                return GL_RGBA32F;
+            }
+        default:
+            GLOW_FAIL("Unexpected type.");
+            return GL_RGB;
+        }
+    }
 
-        type = TextureType::TEXTURE2D;
-        size = s;
-        mode = m;
-        mode = m;
+    GLenum glformat(ColorMode color) noexcept
+    {
+        switch (color)
+        {
+        case ColorMode::R:
+            return GL_RED;
+        case ColorMode::RG:
+            return GL_RG;
+        case ColorMode::RGB:
+            return GL_RGB;
+        case ColorMode::BGR:
+            return GL_BGR;
+        case ColorMode::RGBA:
+            return GL_RGBA;
+        case ColorMode::BGRA:
+            return GL_BGRA;
+        default:
+            GLOW_FAIL("Unexpected color mode.");
+            return GL_RGB;
+        }
+    }
+
+    GLenum gltype(DataType data) noexcept
+    {
+        switch (data)
+        {
+        case DataType::INT8:
+            return GL_BYTE;
+        case DataType::UINT8:
+            return GL_UNSIGNED_BYTE;
+        case DataType::INT16:
+            return GL_SHORT;
+        case DataType::UINT16:
+            return GL_UNSIGNED_SHORT;
+        case DataType::INT32:
+            return GL_INT;
+        case DataType::UINT32:
+            return GL_UNSIGNED_INT;
+        case DataType::FLOAT:
+            return GL_FLOAT;
+        case DataType::DOUBLE:
+            return GL_DOUBLE;
+        default:
+            GLOW_FAIL("Unexpected type.");
+            return GL_RGB;
+        }
+    }
+
+    void Texture::upload_2d(glm::uvec2 s, ColorMode c, DataType d, const void* memory, FilterMode filter, WrapMode wrap) noexcept
+    {
+        GLOW_ASSERT(glid != 0);
+        GLOW_ASSERT(c != ColorMode::UNKNOWN);
+        GLOW_ASSERT(d != DataType::UNKNOWN);
+
+        type  = TextureType::TEXTURE2D;
+        size  = s;
+        color = c;
+        data  = d;
 
         glBindTexture(GL_TEXTURE_2D, glid);
 
-        // TODO mipmap
-        if (filter == FilterMode::FILTER_NEAREST)
+        switch (filter)
         {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        }
-        else
-        {
+        case FilterMode::LINEAR:
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        }
-
-        GLenum glmode = color2gl(mode);
-
-        glTexImage2D(GL_TEXTURE_2D, 0, glmode, size[0], size[1], 0, glmode, GL_UNSIGNED_BYTE, data);
-
-
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        assert(glGetError() == GL_NO_ERROR);
-    }
-
-    // REVIEW consider rolling upload_2d and upload_2d_float into one function.
-    void Texture::upload_2d_float(glm::uvec2 s, ColorMode m, float* data, FilterMode filter)
-    {
-        assert(glid != 0);
-
-        type = TextureType::TEXTURE2D;
-        size = s;
-        mode = m;
-
-        glBindTexture(GL_TEXTURE_2D, glid);
-
-        // TODO mipmap
-        if (filter == FilterMode::FILTER_NEAREST)
-        {
+            break;
+        case FilterMode::NEAREST:
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            break;
+        default:
+            GLOW_FAIL("Unknown filter mode.");
+            break;
         }
-        else
+
+        switch (wrap)
         {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        case WrapMode::CLAMP:
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            break;
+        case WrapMode::REPEAT:
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            break;
+        default:
+            GLOW_FAIL("Unknown wrap mode.");
+            break;
         }
 
-        GLenum glintmode = color2gl_float(mode);
-        GLenum glmode = color2gl(mode);
-        glTexImage2D(GL_TEXTURE_2D, 0, glintmode, size[0], size[1], 0, glmode, GL_FLOAT, data);
-
+        GLenum gl_internalformat = glinternalformat(color, data);
+        GLenum gl_format         = glformat(color);
+        GLenum gl_type           = gltype(data);
+        glTexImage2D(GL_TEXTURE_2D, 0, gl_internalformat, size.x, size.y, 0, gl_format, gl_type, memory);
 
         glBindTexture(GL_TEXTURE_2D, 0);
-
-        assert(glGetError() == GL_NO_ERROR);
+        GLOW_CHECK_GLERROR();
     }
 
-    void Texture::upload_cube(unsigned int resolution, ColorMode m, void* xpos, void* xneg, void* ypos, void* yneg, void* zpos, void* zneg, FilterMode filter)
+    void Texture::upload_cube(unsigned int resolution, ColorMode c, DataType d, const void* xpos, const void* xneg, const void* ypos, const void* yneg, const void* zpos, const void* zneg, FilterMode filter) noexcept
     {
-        assert(glid != 0);
+        GLOW_ASSERT(glid != 0);
 
-        type = TextureType::CUBE_MAP;
-        size = glm::uvec2(resolution);
-        mode = m;
+        type  = TextureType::CUBE_MAP;
+        size  = glm::uvec2(resolution);
+        color = c;
+        data  = d;
 
-        GLenum glmode = color2gl(mode);
+        GLenum gl_internalformat = glinternalformat(color, data);
+        GLenum gl_format         = glformat(color);
+        GLenum gl_type           = gltype(data);
 
         glBindTexture(GL_TEXTURE_CUBE_MAP, glid);
 
-        if (filter == FilterMode::FILTER_NEAREST)
+        if (filter == FilterMode::NEAREST)
         {
             glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -243,19 +365,19 @@ namespace glow
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, glmode, resolution, resolution, 0, glmode, GL_UNSIGNED_BYTE, xpos);
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, glmode, resolution, resolution, 0, glmode, GL_UNSIGNED_BYTE, xneg);
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, glmode, resolution, resolution, 0, glmode, GL_UNSIGNED_BYTE, ypos);
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, glmode, resolution, resolution, 0, glmode, GL_UNSIGNED_BYTE, yneg);
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, glmode, resolution, resolution, 0, glmode, GL_UNSIGNED_BYTE, zpos);
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, glmode, resolution, resolution, 0, glmode, GL_UNSIGNED_BYTE, zneg);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl_internalformat, resolution, resolution, 0, gl_format, gl_type, xpos);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl_internalformat, resolution, resolution, 0, gl_format, gl_type, xneg);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl_internalformat, resolution, resolution, 0, gl_format, gl_type, ypos);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl_internalformat, resolution, resolution, 0, gl_format, gl_type, yneg);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl_internalformat, resolution, resolution, 0, gl_format, gl_type, zpos);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl_internalformat, resolution, resolution, 0, gl_format, gl_type, zneg);
 
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
-        assert(glGetError() == GL_NO_ERROR);
+        GLOW_CHECK_GLERROR();
     }
 
-    void Texture::generate_mipmaps()
+    void Texture::generate_mipmaps() noexcept
     {
         switch (type)
         {
@@ -279,12 +401,12 @@ namespace glow
         }
 
         // NOTE: make this configurable
-        float aniso = 0.0f;
+        auto aniso = 0.0f;
         glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
     }
 
-    int Texture::get_mipmap_levels() const
+    int Texture::get_mipmap_levels() const noexcept
     {
         int result = 0;
         switch (type)
@@ -296,7 +418,7 @@ namespace glow
                 glGetTexParameteriv(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, &result);
                 break;
             default:
-                assert(false && "no texture to mipmap");
+                GLOW_FAIL("no texture to mipmap");
                 break;
         }
         return result;
