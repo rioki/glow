@@ -29,54 +29,38 @@ namespace glow
 {
     enum class CubeFace;
 
-    /*!
-     * Frame Buffer
-     */
+    //! Frame Buffer Wrapper
     class GLOW_EXPORT FrameBuffer
     {
     public:
-        /*!
-         * Create empty frame buffer.
-         */
+        //! Create empty frame buffer.
         FrameBuffer();
 
-        /*!
-         * Destroy frame buffer.
-         */
+        //! Destroy frame buffer.
         ~FrameBuffer();
 
-        /*!
-         * Bind the frame buffer for writing.
-         */
+        //! Bind the frame buffer for writing.
         void bind();
 
-        /*!
-         * Unbind the frame buffer.
-         */
+        //! Unbind the frame buffer.
         void unbind();
 
-        /*!
-         * Attach depth buffer.
-         */
+        //! Attach depth buffer.
         void attach_depth(Texture& texture);
 
-        /*!
-         * Attach color buffer.
-         *
-         * @param slot the slot to use
-         * @param texture the texture to write to
-         * @param level the mipmap level to write to
-         */
+        //! Attach color buffer.
+        //!
+        //! @param slot the slot to use
+        //! @param texture the texture to write to
+        //! @param level the mipmap level to write to
         void attach(unsigned int slot, Texture& texture, unsigned int level = 0);
 
-        /*!
-         * Attach cubamap face as color buffer..
-         *
-         * @param slot the slot to use
-         * @param texture the texture to write to
-         * @param face the cubemap face
-         * @param level the mipmap level to write to
-         */
+        //! Attach cubamap face as color buffer.
+        //!
+        //! @param slot the slot to use
+        //! @param texture the texture to write to
+        //! @param face the cubemap face
+        //! @param level the mipmap level to write to
         void attach(unsigned int slot, Texture& texture, CubeFace face, unsigned int level = 0);
 
     private:
