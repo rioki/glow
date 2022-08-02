@@ -27,4 +27,6 @@ namespace glow
     class Texture;
     class VertexBuffer;
 	class FrameBuffer;
+    class Parameters;
+    class Pipeline;
 }

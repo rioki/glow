@@ -75,7 +75,6 @@ namespace glow
 
     GLOW_EXPORT void handle_fail(const std::string& file, const unsigned int line, const std::string_view message) noexcept;
 
-    //! Check if there is an OpenGL error.
     GLOW_EXPORT void check_gl_error(const std::string& file, const unsigned int line) noexcept;
 #endif
 
@@ -84,9 +83,13 @@ namespace glow
 }
 
 #if !defined(NDEBUG) && defined(__cpp_lib_format)
+//! Output a trace into the debugger.
 #define GLOW_TRACE(MSG, ...)  ::glow::trace(::glow::basename(__FILE__), __LINE__, MSG, __VA_ARGS__)
+//! Check if a condition is true.
 #define GLOW_ASSERT(COND)    do { if (!(COND)) { ::glow::handle_assert(::glow::basename(__FILE__), __LINE__, #COND); } } while (false)
+//! Flag this code path as faulty.
 #define GLOW_FAIL(MSG)       ::glow::handle_fail(::glow::basename(__FILE__), __LINE__, MSG)
+//! Check if the OpenGL error is set and notify.
 #define GLOW_CHECK_GLERROR() ::glow::check_gl_error(::glow::basename(__FILE__), __LINE__)
 #else
 #define GLOW_TRACE(MSG, ...)

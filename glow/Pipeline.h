@@ -37,13 +37,12 @@ namespace glow
     //! Pass Type
     enum class PassType
     {
-        // The uncomented ones are not implemented
-        FULLSCREEN,          // Once with fullscreen rect
-        GEOMETRY,            // for each geometry
-        LIGHTS,              // for each light
-        LIGHTS_AND_GEOMETRY, // for each light for each geometry
-        GEOMETRY_AND_LIGHTS  // for each geometry for each light
-                             // SHADOW            // for each light but camera = light source
+        FULLSCREEN,          //!< once with full screen rect
+        GEOMETRY,            //!< for each geometry
+        LIGHTS,              //!< for each light
+        LIGHTS_AND_GEOMETRY, //!< for each light for each geometry
+        GEOMETRY_AND_LIGHTS  //!< for each geometry for each light
+        // SHADOW            // TODO for each light but camera = light source
     };
 
     //! Depth Test
