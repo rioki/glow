@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2022-08-08
+
 ### Added
 
 - added CMake support
@@ -33,5 +35,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - added the FrameBuffer wrapper
 - added GL error utilities clear_errors, get_error
 
-[Unreleased]: https://github.com/rioki/glow/compare/v0.1.0...master
+[Unreleased]: https://github.com/rioki/glow/compare/v0.2.0...master
+[0.2.0]: https://github.com/rioki/glow/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/rioki/glow/commits/v0.1.0
