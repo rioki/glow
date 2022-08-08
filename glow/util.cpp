@@ -78,7 +78,7 @@ namespace glow
         }
     }
 
-#if !defined(NDEBUG) && defined(__cpp_lib_format)
+#if !defined(NDEBUG) && defined(__cpp_lib_format) && !defined(_WIN_UWP_)
     #ifdef _WIN32
     void show_message_box(const std::string_view& message) noexcept
     {

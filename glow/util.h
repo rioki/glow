@@ -24,9 +24,13 @@
 #include <vector>
 #include <string>
 
+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_APP)
+#define _WIN_UWP_
+#endif
+
 // It's 2022, if your compiler does not have <format> in C++20
 // mode, talk to your compiler vendor; I will not work around it.
-#if !defined(NDEBUG) && defined(__cpp_lib_format)
+#if !defined(NDEBUG) && defined(__cpp_lib_format) && !defined(_WIN_UWP_)
 #include <format>
 #endif
 
@@ -48,7 +52,7 @@ namespace glow
     //! before calling anyhting else.
     GLOW_EXPORT void init();
 
-#if !defined(NDEBUG) && defined(__cpp_lib_format)
+#if !defined(NDEBUG) && defined(__cpp_lib_format) && !defined(_WIN_UWP_)
     constexpr std::string basename(const std::string& file) noexcept
     {
         auto i = file.find_last_of("\\/");
@@ -82,7 +86,7 @@ namespace glow
     template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 }
 
-#if !defined(NDEBUG) && defined(__cpp_lib_format)
+#if !defined(NDEBUG) && defined(__cpp_lib_format) && !defined(_WIN_UWP_)
 //! Output a trace into the debugger.
 #define GLOW_TRACE(MSG, ...)  ::glow::trace(::glow::basename(__FILE__), __LINE__, MSG, __VA_ARGS__)
 //! Check if a condition is true.
