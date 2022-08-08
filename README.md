@@ -1,20 +1,25 @@
-#  OpenGL Object Wrapper
+# OpenGL Object Wrapper
 
 The OpenGL Object Wrapper implements RAII style resource management for OpenGL
 resources.
 
 ## Implemented Wrappers
 
+Glow provides wrappers for the following OpenGL objects:
+
 * [Texture](glow/Texture.h)
 * [Shader](glow/Shader.h)
 * [Vertex Buffer](glow/VertexBuffer.h)
 * [Frame Buffer](glow/FrameBuffer.h)
 
-### ToDO
+## Rendering Infrastucture
 
-* Uniform Buffer
-* Shader Storage Buffer
-* Geometry & Compute Shaders
+Glow provides the [Pipeline](glow/Pipeline.h) class that implements
+a multi stage rendering algorithm. Specify the render passes with add_pass,
+add geometry, lights and set the camera matrices and execute.
+
+To facilitate state the [Parameters](glow/Parameters.h) provide the means
+to associate uniform variables to values without a specific shader.
 
 ## Dependencies
 
@@ -23,39 +28,19 @@ The glow library is built on top of C++17 and builds on top of
 
 ## Building
 
-### Windows
+The primary development of glow is done with [Visual Studio 2022][vs]. 
+Dependencies are pulled with [vcpkg], folow the [Get started with vcpkg] guide
+to setup your build environment.
 
-The easyest way to build glow on Windows is with [vcpkg] and [Visual Studio 2019][vs19]. 
-
-First you need to get glew and glm through vcpkg.
-
-	vcpkg install glew:x86-windows glew:x64-windows glm:x86-windows glm:x64-windows
-
-Then you can open glow.sln in Visual Studio 2019 and build the library.
+CMake is available, but mostly serves are vcpkg integration.
 
 ## License
 
-    Copyright 2016-2019 Sean Farrell <sean.farrell@rioki.org>
-    
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
-    
-    The above copyright notice and this permission notice shall be included in
-    all copies or substantial portions of the Software.
-    
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-    THE SOFTWARE.
-	
+The glow libary is provided under the MIT license, see [LICENSE.txt](LICENSE.txt)
+for details.
+
 [glew]: http://glew.sourceforge.net/
 [glm]: https://glm.g-truc.net
 [vcpkg]: https://github.com/microsoft/vcpkg
-[vs19]: https://visualstudio.microsoft.com/vs/
+[vs]: https://visualstudio.microsoft.com/vs/
+[Get started with vcpkg]: https://vcpkg.io/en/getting-started.html
