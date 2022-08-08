@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(glow CXX)
+project(rioki-glow CXX)
 
 set(CMAKE_SHARED_LIBRARY_PREFIX)
 set(CMAKE_STATIC_LIBRARY_PREFIX)
@@ -33,23 +33,23 @@ set(SOURCES_GLOW
 )
 
 # glow library
-add_library(glow ${SOURCES_GLOW})
-target_link_libraries(glow PUBLIC GLEW::GLEW)
-target_link_libraries(glow PUBLIC glm::glm)
-set_target_properties(glow PROPERTIES
+add_library(rioki-glow ${SOURCES_GLOW})
+target_link_libraries(rioki-glow PUBLIC GLEW::GLEW)
+target_link_libraries(rioki-glow PUBLIC glm::glm)
+set_target_properties(rioki-glow PROPERTIES
     CXX_STANDARD 20
     PUBLIC_HEADER "${HEADERS_GLOW}"
 )
 
 # install
-target_include_directories(glow PUBLIC
+target_include_directories(rioki-glow PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/glow>
-    $<INSTALL_INTERFACE:include/glow>)
+    $<INSTALL_INTERFACE:include/rioki/glow>)
 
 install(TARGETS ${PROJECT_NAME}
     EXPORT litehtmlTargets
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
-    PUBLIC_HEADER DESTINATION include/glow
+    PUBLIC_HEADER DESTINATION include/rioki/glow
 )
