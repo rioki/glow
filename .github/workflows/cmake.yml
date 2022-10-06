@@ -21,12 +21,16 @@ jobs:
         include:
           - triplet: x86-windows
             system: windows-latest
+            mono: ''
           - triplet: x64-windows
             system: windows-latest
+            mono: ''
           - triplet: x64-linux
             system: ubuntu-latest
+            mono: 'mono'
           - triplet: x64-macos
             system: macos-latest
+            mono: 'mono'
     runs-on: ${{ matrix.system }}
     env:
       VCPKG_DEFAULT_TRIPLET: ${{ matrix.triplet }}
@@ -43,14 +47,14 @@ jobs:
     - name: 'Setup NuGet/Vcpkg Credentials'
       shell: 'bash'
       run: >
-        `./vcpkg/vcpkg fetch nuget | tail -n 1` \
+        ${{ matrix.mono }} `./vcpkg/vcpkg fetch nuget | tail -n 1` \
           sources add \
           -source "https://nuget.pkg.github.com/rioki/index.json" \
           -storepasswordincleartext \
           -name "GitHub" \
           -username "rioki" \
           -password "${{ secrets.GITHUB_TOKEN }}"
-        `./vcpkg/vcpkg fetch nuget | tail -n 1` \
+        ${{ matrix.mono }} `./vcpkg/vcpkg fetch nuget | tail -n 1` \
           setapikey "${{ secrets.GITHUB_TOKEN }}" \
           -source "https://nuget.pkg.github.com/rioki/index.json"
     - name: Build
