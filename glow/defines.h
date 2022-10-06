@@ -22,7 +22,7 @@
 #pragma once
 
 //! GLOW Version Number
-#define GLOW_VERSION "0.2.0"
+#define GLOW_VERSION "0.2.1"
 
 #ifdef _WIN32
 #define GLOW_EXPORT __declspec(dllexport)
