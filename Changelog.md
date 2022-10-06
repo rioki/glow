@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- fixed multipass shading for multiple consequitive passes
+- fixed multi-pass shading for multiple consecutive passes
 - fied compile warnings
 
 ## [0.2.0] - 2022-08-08
@@ -42,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - added the FrameBuffer wrapper
 - added GL error utilities clear_errors, get_error
 
-[Unreleased]: https://github.com/rioki/glow/compare/v0.2.0...master
+[Unreleased]: https://github.com/rioki/glow/compare/v0.2.1...master
+[0.2.1]: https://github.com/rioki/glow/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/rioki/glow/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/rioki/glow/commits/v0.1.0
