@@ -32,7 +32,7 @@ namespace glow
 
         #ifndef NDEBUG
         glBindTexture(GL_TEXTURE_2D, glid);
-        glObjectLabel(GL_TEXTURE, glid, debug_label.size(), debug_label.data());
+        glObjectLabel(GL_TEXTURE, glid, static_cast<GLsizei>(debug_label.size()), debug_label.data());
         GLOW_CHECK_GLERROR();
         glBindTexture(GL_TEXTURE_2D, 0);
         #endif
