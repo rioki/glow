@@ -53,7 +53,7 @@ jobs:
     - name: Integrate vcpkg in MSBuild
       shell: 'bash'
       run: >
-        ./vcpkg/vcpkg integrate instal
+        ./vcpkg/vcpkg integrate install
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: msbuild /m /p:Configuration=${{matrix.configuration}} /property:Platform=${{matrix.platform}} glow.sln
