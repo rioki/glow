@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2022-10-06
+
+### Fixed
+
+- fixed multipass shading for multiple consequitive passes
+- fied compile warnings
+
 ## [0.2.0] - 2022-08-08
 
 ### Added
