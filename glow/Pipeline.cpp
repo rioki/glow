@@ -173,7 +173,7 @@ namespace glow
         }
     }
 
-    void apply(Blending blending, bool first_layer = true) noexcept
+    void apply(Blending blending, bool& first_multipass) noexcept
     {
         switch (blending)
         {
@@ -185,14 +185,15 @@ namespace glow
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             break;
         case Blending::MULTIPASS:
-            if (first_layer)
+            if (first_multipass)
             {
                 glDisable(GL_BLEND);
-                glBlendFunc(GL_ONE, GL_ONE);
+                first_multipass = false;
             }
             else
             {
                 glEnable(GL_BLEND);
+                glBlendFunc(GL_ONE, GL_ONE);
             }
             break;
         }
@@ -200,10 +201,11 @@ namespace glow
 
     void Pipeline::execute() noexcept
     {
+        auto first_multipass = true;
         for (auto& pass : passes)
         {
             pass.shader->bind();
-            //pass.shader->bind_output("glow_FragColor", 0);
+            pass.shader->bind_output("glow_FragColor", 0);
             pass.shader->set_uniform("glow_ProjectionMatrix", projection_matrix);
             pass.shader->set_uniform("glow_ViewMatrix",       view_matrix);
             apply(*pass.shader, *pass.parameters);
@@ -211,14 +213,14 @@ namespace glow
             switch (pass.group)
             {
             case PassType::FULLSCREEN:
-                apply(pass.blending);
+                apply(pass.blending, first_multipass);
                 fullscreen_rectangle->bind(*pass.shader);
                 fullscreen_rectangle->draw();
                 break;
             case PassType::GEOMETRY:
                 for (auto& [id, geom] : geoms)
                 {
-                    apply(pass.blending);
+                    apply(pass.blending, first_multipass);
                     apply(*pass.shader, geom);
                     geom.mesh->bind(*pass.shader);
                     geom.mesh->draw();
@@ -227,17 +229,17 @@ namespace glow
             case PassType::LIGHTS:
                 for (auto& [id, light] : lights)
                 {
-                    apply(pass.blending);
+                    apply(pass.blending, first_multipass);
                     apply(*pass.shader, light);
                     fullscreen_rectangle->bind(*pass.shader);
                     fullscreen_rectangle->draw();
                 }
                 break;
             case PassType::LIGHTS_AND_GEOMETRY:
-                apply(pass.blending);
                 for (auto& [id, light] : lights)
                 {
                     apply(*pass.shader, light);
+                    apply(pass.blending, first_multipass);
                     for (auto& [id, geom] : geoms)
                     {
                         apply(*pass.shader, geom);
@@ -245,21 +247,24 @@ namespace glow
                         geom.mesh->draw();
 
                     }
-                    apply(pass.blending, false);
                 }
                 break;
             case PassType::GEOMETRY_AND_LIGHTS:
                 for (auto& [id, geom] : geoms)
                 {
-                    apply(pass.blending);
+                    auto tmp = first_multipass;
                     apply(*pass.shader, geom);
                     geom.mesh->bind(*pass.shader);
                     for (auto& [id, light] : lights)
                     {
                         apply(*pass.shader, light);
+                        apply(pass.blending, tmp);
                         geom.mesh->draw();
-                        apply(pass.blending, false);
                     }
+                }
+                if (pass.blending == Blending::MULTIPASS)
+                {
+                    first_multipass = false;
                 }
                 break;
             }
