@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - fixed multi-pass shading for multiple consecutive passes
-- fied compile warnings
+- fixed compile warnings
 
 ## [0.2.0] - 2022-08-08
 
