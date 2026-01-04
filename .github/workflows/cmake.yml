@@ -10,7 +10,28 @@ permissions:
   contents: read
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Check CMake
+      uses: actions/github-script@v7
+      with:
+        script: |
+          let path = require('path');
+          let fs = require('fs').promises;
+          let patterns = ['**/glow/*.cpp', '**/glow/*.h'];
+          let globber = await glob.create(patterns.join('\n'));
+          let cmakeContents = await fs.readFile('CMakeLists.txt', 'utf-8');
+          for await (let file of globber.globGenerator()) {
+            let basename = path.basename(file);
+            if (cmakeContents.search(basename) == -1) {
+              core.setFailed(`${basename} is missing in CMakeLists.txt`);
+            }
+          }
   build:
+    needs: check
     strategy:
       matrix:
         triplet: [x86-windows, x64-windows, x64-linux, x64-macos]
