@@ -8,10 +8,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
-
-env:
-  VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
 
 jobs:
   build:
@@ -35,25 +31,10 @@ jobs:
     - name: Restore from cache and install vcpkg
       uses: lukka/run-vcpkg@v10
       with:
-        vcpkgGitCommitId: e2667a41fc2fc578474e9521d7eb90b769569c83
-        appendedCacheKey: ${{ matrix.triplet }}
-    - name: 'Setup NuGet/Vcpkg Credentials'
-      shell: 'bash'
-      run: >
-        `./vcpkg/vcpkg fetch nuget | tail -n 1` \
-          sources add \
-          -source "https://nuget.pkg.github.com/rioki/index.json" \
-          -storepasswordincleartext \
-          -name "GitHub" \
-          -username "rioki" \
-          -password "${{ secrets.GITHUB_TOKEN }}"
-        `./vcpkg/vcpkg fetch nuget | tail -n 1` \
-          setapikey "${{ secrets.GITHUB_TOKEN }}" \
-          -source "https://nuget.pkg.github.com/rioki/index.json"
-    - name: Integrate vcpkg in MSBuild
-      shell: 'bash'
-      run: >
-        ./vcpkg/vcpkg integrate install
+        vcpkgGitCommitId: e7d7451462697d77ef319ddf2da8ff7320a82662
+    - name: Integrate vcpkg 
+      working-directory: ${{steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT}}
+      run: vcpkg.exe integrate install
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: msbuild /m /p:Configuration=${{matrix.configuration}} /property:Platform=${{matrix.platform}} glow.sln
