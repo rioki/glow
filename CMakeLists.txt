@@ -17,9 +17,7 @@ set(HEADERS
   glow/FrameBuffer.h
   glow/fwd.h
   glow/glow.h
-  glow/Parameters.h
   glow/pch.h
-  glow/Pipeline.h
   glow/Shader.h
   glow/Texture.h
   glow/util.h
@@ -28,9 +26,7 @@ set(HEADERS
 
 set(SOURCES
   glow/FrameBuffer.cpp
-  glow/Parameters.cpp
   glow/pch.cpp
-  glow/Pipeline.cpp
   glow/Shader.cpp
   glow/Texture.cpp
   glow/util.cpp
