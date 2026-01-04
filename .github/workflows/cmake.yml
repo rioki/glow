@@ -8,10 +8,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
-
-env:
-  VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
 
 jobs:
   build:
@@ -21,47 +17,30 @@ jobs:
         include:
           - triplet: x86-windows
             system: windows-latest
-            mono: ''
           - triplet: x64-windows
             system: windows-latest
-            mono: ''
           - triplet: x64-linux
             system: ubuntu-latest
-            mono: 'mono'
           - triplet: x64-macos
             system: macos-latest
-            mono: 'mono'
     runs-on: ${{ matrix.system }}
     env:
       VCPKG_DEFAULT_TRIPLET: ${{ matrix.triplet }}
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+    - name: Install Linux system deps (glew)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends \
+          libxmu-dev libxi-dev libgl-dev
     - name: Install CMake
       uses: lukka/get-cmake@latest
-    - name: Install Mesa OpenGL
-      if: matrix.triplet == 'x64-linux'
-      run: |
-        sudo apt-get update -qq
-        sudo apt-get install -y --no-install-recommends libxmu-dev libxi-dev libgl-dev libgl1-mesa-dev
     - name: Restore from cache and install vcpkg
       uses: lukka/run-vcpkg@v10
       with:
-        vcpkgGitCommitId: e2667a41fc2fc578474e9521d7eb90b769569c83
-        appendedCacheKey: ${{ matrix.triplet }}
-    - name: 'Setup NuGet/Vcpkg Credentials'
-      shell: 'bash'
-      run: >
-        ${{ matrix.mono }} `./vcpkg/vcpkg fetch nuget | tail -n 1` \
-          sources add \
-          -source "https://nuget.pkg.github.com/rioki/index.json" \
-          -storepasswordincleartext \
-          -name "GitHub" \
-          -username "rioki" \
-          -password "${{ secrets.GITHUB_TOKEN }}"
-        ${{ matrix.mono }} `./vcpkg/vcpkg fetch nuget | tail -n 1` \
-          setapikey "${{ secrets.GITHUB_TOKEN }}" \
-          -source "https://nuget.pkg.github.com/rioki/index.json"
+        vcpkgGitCommitId: e7d7451462697d77ef319ddf2da8ff7320a82662
     - name: Build
       uses: lukka/run-cmake@v10
       with:

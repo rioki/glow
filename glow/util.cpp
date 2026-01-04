@@ -1,5 +1,5 @@
 // OpenGL Object Wrapper
-// Copyright 2016-2022 Sean Farrell <sean.farrell@rioki.org>
+// Copyright 2016-2026 Sean Farrell <sean.farrell@rioki.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,8 @@
 #ifdef _WIN32
 #define NOMINMAX
 #include <Windows.h>
+#else
+#include <iostream>
 #endif
 
 namespace glow
